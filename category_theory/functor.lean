@@ -42,50 +42,36 @@ infixr ` ↝ `:70 := functor       -- type as \lea --
 namespace functor
 
 section
-variables {C : Type u₁} [𝒞 : category.{u₁ v₁} C] {D : Type u₂} [𝒟 : category.{u₂ v₂} D]
-include 𝒞 𝒟
-
-instance : has_coe_to_fun (C ↝ D) :=
-{ F   := λ F, C → D,
-  coe := λ F, F.obj }
-
-@[simp] lemma coe_def (F : C ↝ D) (X : C) : F X = F.obj X := rfl
+  variables {C : Type u₁} [𝒞 : category.{u₁ v₁} C] {D : Type u₂} [𝒟 : category.{u₂ v₂} D]
+  include 𝒞 𝒟
+  instance : has_coe_to_fun (C ↝ D) :={ F   := λ F, C → D,coe := λ F, F.obj }
+  @[simp] lemma coe_def (F : C ↝ D) (X : C) : F X = F.obj X := rfl
 end
-
 section
-variables (C : Type u₁) [𝒞 : category.{u₁ v₁} C]
-include 𝒞
-
-/-- `functor.id C` is the identity functor on a category `C`. -/
-protected definition id : C ↝ C := 
-{ obj      := λ X, X,
-  map      := λ _ _ f, f,
-  map_id   := begin /- `obviously'` says: -/ intros, refl end,
-  map_comp := begin /- `obviously'` says: -/ intros, refl end }
-
-variable {C}
-
-@[simp] lemma id_obj (X : C) : (functor.id C) X = X := rfl
-@[simp] lemma id_map {X Y : C} (f : X ⟶ Y) : (functor.id C).map f = f := rfl
+  variables (C : Type u₁) [𝒞 : category.{u₁ v₁} C]
+  include 𝒞
+  /-- `functor.id C` is the identity functor on a category `C`. -/
+  protected definition id : C ↝ C := 
+  { obj      := λ X, X,
+    map      := λ _ _ f, f,
+    map_id   := begin /- `obviously'` says: -/ intros, refl end,
+    map_comp := begin /- `obviously'` says: -/ intros, refl end }
+  variable {C}
+  @[simp] lemma id_obj (X : C) : (functor.id C) X = X := rfl
+  @[simp] lemma id_map {X Y : C} (f : X ⟶ Y) : (functor.id C).map f = f := rfl
 end
-
 section
-variables {C : Type u₁} [𝒞 : category.{u₁ v₁} C] {D : Type u₂} [𝒟 : category.{u₂ v₂} D] {E : Type u₃} [ℰ : category.{u₃ v₃} E]
-include 𝒞 𝒟 ℰ
-
-/--
-`F ⋙ G` is the composition of a functor `F` and a functor `G` (`F` first, then `G`).
--/
-definition comp (F : C ↝ D) (G : D ↝ E) : C ↝ E := 
-{ obj      := λ X, G.obj (F.obj X),
-  map      := λ _ _ f, G.map (F.map f),
-  map_id   := begin /- `obviously'` says: -/ intros, simp end,
-  map_comp := begin /- `obviously'` says: -/ intros, simp end }
-
-infixr ` ⋙ `:80 := comp
-
-@[simp] lemma comp_obj (F : C ↝ D) (G : D ↝ E) (X : C) : (F ⋙ G).obj X = G.obj (F.obj X) := rfl
-@[simp] lemma comp_map (F : C ↝ D) (G : D ↝ E) (X Y : C) (f : X ⟶ Y) : (F ⋙ G).map f = G.map (F.map f) := rfl
+  variables {C : Type u₁} [𝒞 : category.{u₁ v₁} C] {D : Type u₂} [𝒟 : category.{u₂ v₂} D] {E : Type u₃} [ℰ : category.{u₃ v₃} E]
+  include 𝒞 𝒟 ℰ
+  /--`F ⋙ G` is the composition of a functor `F` and a functor `G` (`F` first, then `G`).-/
+  definition comp (F : C ↝ D) (G : D ↝ E) : C ↝ E := 
+  { obj      := λ X, G.obj (F.obj X),
+    map      := λ _ _ f, G.map (F.map f),
+    map_id   := begin /- `obviously'` says: -/ intros, simp end,
+    map_comp := begin /- `obviously'` says: -/ intros, simp end }
+  infixr ` ⋙ `:80 := comp
+  @[simp] lemma comp_obj (F : C ↝ D) (G : D ↝ E) (X : C) : (F ⋙ G).obj X = G.obj (F.obj X) := rfl
+  @[simp] lemma comp_map (F : C ↝ D) (G : D ↝ E) (X Y : C) (f : X ⟶ Y) : (F ⋙ G).map f = G.map (F.map f) := rfl
 end
 
 end functor
