@@ -12,7 +12,7 @@ class category (Ob : Type u) : Type (max u (v+1)) :=
     (comp_id : ∀ {X Y : Ob} (f : Hom X Y), comp f (id Y) = f)
     (assoc : ∀ {W X Y Z} (f : Hom W X) (g : Hom X Y) (h : Hom Y Z), comp (comp f g) h = comp f (comp g h))
 infixr ` >> `:80 := category.comp
-infixr ` => `:10 := category.Hom
+infixr ` ⟶ `:10 := category.Hom
 notation `𝟙` := category.id
 restate_axiom category.id_comp
 restate_axiom category.comp_id
@@ -20,49 +20,90 @@ restate_axiom category.assoc
 attribute [simp, ematch] category.id_comp_lemma category.comp_id_lemma category.assoc_lemma
 abbreviation large_category (C : Type (u+1)) : Type (u+1) := category.{u+1 u} C
 abbreviation small_category (C : Type u)     : Type (u+1) := category.{u u} C
-universes u1 v1 u2 v2 u3 v3
+universes u1 v1 u2 v2 u3 v3 u4 v4
 structure functor (C : Type u1) [category.{u1 v1} C] (D : Type u2) [category.{u2 v2} D] : Type (max u1 u2 v1 v2) :=
     (obj : C -> D)
-    (map : Π {X Y : C}, (X => Y) -> ((obj X) => (obj Y)))
+    (map : Π {X Y : C}, (X ⟶ Y) -> ((obj X) ⟶ (obj Y)))
     (map_id : ∀ (X : C), map (𝟙 X) = 𝟙 (obj X))
-    (map_comp : ∀ {X Y Z : C} (f : X => Y) (g : Y => Z), map(f >> g) = map(f) >> map(g))
+    (map_comp : ∀ {X Y Z : C} (f : X ⟶ Y) (g : Y ⟶ Z), map(f >> g) = map(f) >> map(g))
 restate_axiom functor.map_id
 restate_axiom functor.map_comp
 attribute [simp,ematch] functor.map_id_lemma functor.map_comp_lemma
+infixr ` &> `:70 := functor.map
 infixr ` ~> `:70 := functor
 namespace functor
-    section
-        variables {C : Type u1} [𝒞 : category.{u1 v1} C] {D : Type u2} [𝒟 : category.{u2 v2} D]
+    section --coe stuff, extensionality
+        variables 
+            {C : Type u1} [𝒞 : category.{u1 v1} C] 
+            {D : Type u2} [𝒟 : category.{u2 v2} D]
         include 𝒞 𝒟
         instance : has_coe_to_fun (C ~> D) := {F := λ F, C -> D, coe := λ F, F.obj}
         @[simp] lemma coe_def (F : C ~> D) (X : C) : F X = F.obj X := rfl -- automatically simplify this
     end
     section 
+        variables 
+            {C : Type u1} [𝒞 : category.{u1 v1} C] 
+            {D : Type u2} [𝒟 : category.{u2 v2} D]
+        include 𝒟
+        include 𝒞
+        def functor_extensionality 
+            (F G : C ~> D) 
+            (ob_eq : ∀ (X : C), F X = G X) 
+            (map_eq : ∀ {X Y : C} (f : X ⟶ Y), (eq.rec_on (ob_eq Y) (eq.rec_on (ob_eq X) (F.map f)) : G X ⟶ G Y) = (G.map f)) 
+            : F = G 
+            :=
+            begin
+                cases F,
+                cases G,
+                --cases (funext ob_eq : F_obj = G_obj),
+                sorry
+             end
+    end
+    section -- functor id
         variables (C : Type u1) [𝒞 : category.{u1 v1} C]
         include 𝒞
         protected definition id : C ~> C := { obj := λ X, X,map := λ _ _ f, f, map_id := by simp_intros, map_comp := by simp_intros }
         variable {C}
         @[simp] lemma id_obj (X : C) : (functor.id C) X = X := rfl
-        @[simp] lemma id_map {X Y : C} (f : X => Y) : (functor.id C).map f = f := rfl
+        @[simp] lemma id_map {X Y : C} (f : X ⟶ Y) : (functor.id C).map f = f := rfl
     end
-    section
-        variables {C : Type u1} [𝒞 : category.{u1 v1} C] {D : Type u2} [𝒟 : category.{u2 v2} D] {E : Type u3} [ℰ : category.{u3 v3} E]
-        include 𝒞 𝒟 ℰ
+    section -- composition
+        variables
+            {C1 : Type u1} [𝒞1 : category.{u1 v1} C1]
+            {C2 : Type u2} [𝒞2 : category.{u2 v2} C2] 
+            {C3 : Type u3} [𝒞3 : category.{u3 v3} C3] 
+        include 𝒞1 𝒞2 𝒞3
         /--`F >>> G` is the composition of a functor `F` and a functor `G` (`F` first, then `G`).-/
-        definition comp (F : C ~> D) (G : D ~> E) : C ~> E := 
-        { obj      := λ X, G.obj (F.obj X), map := λ _ _ f, G.map (F.map f), map_id := by simp_intros, map_comp := by simp_intros }
+        definition comp (F : C1 ~> C2) (G : C2 ~> C3) : C1 ~> C3 := 
+        { obj       := λ X, G.obj (F.obj X), 
+        map       := λ _ _ f, G.map (F.map f), 
+        map_id    := by simp_intros, 
+        map_comp  := by simp_intros }
         infixr ` >>> `:80 := comp
-        @[simp] lemma comp_obj (F : C ~> D) (G : D ~> E) (X : C) : (F >>> G).obj X = G.obj (F.obj X) := rfl
-        @[simp] lemma comp_map (F : C ~> D) (G : D ~> E) (X Y : C) (f : X => Y) : (F >>> G).map f = G.map (F.map f) := rfl
+        @[simp] lemma comp_obj (F : C1 ~> C2 ) (G : C2  ~> C3) (X : C1) : (F >>> G).obj X = G.obj (F.obj X) := rfl
+        @[simp] lemma comp_map (F : C1 ~> C2 ) (G : C2  ~> C3) (X Y : C1) (f : X ⟶ Y) : (F >>> G).map f = G.map (F.map f) := rfl
+        section -- comp assoc lemma
+            variables {C4 : Type u4} [𝒞4 : category.{u4 v4} C4] 
+            include 𝒞4
+            lemma comp_assoc (F : C1 ~> C2 ) (G : C2  ~> C3) (H : C3 ~> C4) : (F >>> G) >>> H = F >>> (G >>> H) 
+                := by simp [comp]
+        end
     end
+    section --comp_id and id_comp
+        variables 
+            {C : Type u1} [𝒞 : category.{u1 v1} C] 
+            {D : Type u2} [𝒟 : category.{u2 v2} D]
+        include 𝒞 𝒟
+        lemma comp_id (F : C ~> D) : F >>> (functor.id D) = F :=
+            let G := (F >>> (functor.id D)) in
+            begin
+                have obj_eq : ∀ A, F A = G A,  by simp [comp, functor.id],
+                have map_eq : ∀ (X Y : C) (f : X ⟶ Y), F.map f = G.map f,  by simp [comp, functor.id],
+                have : λ (X : C), {obj := λ (X : D), X, map := λ (_x _x_1 : D) (f : _x ⟶ _x_1), f, map_id := _, map_comp := _}.obj (F.obj X) = F.obj, by sorry,
+                simp [comp, functor.id], 
+            end
+    end
+
+
 end functor
-variable {α : Type u} 
-instance : category.{u+1 u} (category.{u u} α) := 
-{   Hom := λ C D, C ~> D,
-    id  := λ C, functor.id C,
-    comp := λ f g, f >>> g,
-    id_comp := sorry
-    comp_id := sorry
-    assoc := sorry
-}
 end shadow_cats

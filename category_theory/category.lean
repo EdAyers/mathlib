@@ -44,6 +44,7 @@ class category (Obj : Type u) : Type (max u (v+1)) :=
 
 notation `𝟙` := category.id -- type as \b1
 infixr ` ≫ `:80 := category.comp -- type as \gg
+infixr ` >> `:80 := category.comp -- type as \gg
 infixr ` ⟶ `:10 := category.Hom -- type as \h
 
 -- restate_axiom is a command that creates a lemma from a structure field, discarding any auto_param wrappers from the type.
