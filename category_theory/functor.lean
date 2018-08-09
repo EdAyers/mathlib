@@ -38,6 +38,7 @@ restate_axiom functor.map_comp
 attribute [simp,ematch] functor.map_id_lemma functor.map_comp_lemma
 
 infixr ` ↝ `:70 := functor       -- type as \lea --
+infixr ` ~> `:70 := functor       -- type as \lea --
 
 namespace functor
 
@@ -83,6 +84,7 @@ def comp (F : C ↝ D) (G : D ↝ E) : C ↝ E :=
   map_comp := begin /- `obviously'` says: -/ intros, simp end }
 
 infixr ` ⋙ `:80 := comp
+infixr ` >>> `:80 := comp
 
 @[simp] lemma comp_obj (F : C ↝ D) (G : D ↝ E) (X : C) : (F ⋙ G).obj X = G.obj (F.obj X) := rfl
 @[simp] lemma comp_map (F : C ↝ D) (G : D ↝ E) (X Y : C) (f : X ⟶ Y) : (F ⋙ G).map f = G.map (F.map f) := rfl
@@ -103,10 +105,10 @@ section --comp_id and id_comp
       {C : Type u₁} [𝒞 : category.{u₁ v₁} C] 
       {D : Type u₂} [𝒟 : category.{u₂ v₂} D]
   include 𝒞 𝒟
-  lemma comp_id (F : C ↝ D) 
+  @[simp] lemma comp_id (F : C ↝ D) 
     : F ⋙ (functor.id D) = F 
     := by cases F;dsimp [comp, functor.id];congr
-  lemma id_comp (F : C ↝ D) 
+  @[simp] lemma id_comp (F : C ↝ D) 
     : (functor.id C) ⋙ F = F 
     := by cases F; dsimp [comp, functor.id]; congr
 end

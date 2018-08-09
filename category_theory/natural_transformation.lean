@@ -37,6 +37,7 @@ restate_axiom nat_trans.naturality
 attribute [ematch] nat_trans.naturality_lemma
 
 infixr ` ⟹ `:50  := nat_trans             -- type as \==> or ⟹
+infixr ` ==> `:50  := nat_trans             -- type as \==> or ⟹
 
 namespace nat_trans
 
@@ -52,6 +53,7 @@ protected def id (F : C ↝ D) : F ⟹ F :=
   naturality := begin /- `obviously'` says: -/ intros, dsimp, simp end }
 
 @[simp] lemma id_app (F : C ↝ D) (X : C) : (nat_trans.id F) X = 𝟙 (F X) := rfl
+
 
 open category
 open category_theory.functor
@@ -96,6 +98,12 @@ def hcomp {F G : C ↝ D} {H I : D ↝ E} (α : F ⟹ G) (β : H ⟹ I) : (F ⋙
                 end }
 
 notation α `◫` β:80 := hcomp α β
+
+def whisker_left {G H : D ~> E} (F : C ~> D) (α : G ==> H) : (F >>> G) ==> (F >>> H)
+:= (nat_trans.id F) ◫ α 
+
+def whisker_right {G H : C ~> D}  (α : G ==> H) (F : D ~> E) : (G >>> F) ==> (H >>> F)
+:= α ◫ (nat_trans.id F)  
 
 @[simp] lemma hcomp_app {F G : C ↝ D} {H I : D ↝ E} (α : F ⟹ G) (β : H ⟹ I) (X : C) : (α ◫ β) X = (β (F X)) ≫ (I.map (α X)) := rfl
 
