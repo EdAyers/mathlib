@@ -9,18 +9,27 @@ namespace category_theory
             {C : Type u1} [𝒞 : category.{u1 v1} C] 
             {D : Type u2} [𝒟 : category.{u2 v2} D]
         include 𝒟 𝒞
-        def functor_extensionality 
-            (F G : C ↝ D) 
-            (ob_eq : ∀ (X : C), F X = G X) 
-            (map_eq : ∀ {X Y : C} (f : X ⟶ Y), (eq.rec_on (ob_eq Y) (eq.rec_on (ob_eq X) (F.map f)) : G X ⟶ G Y) = (G.map f)) 
-            : F = G :=
-            begin
-                cases F,
-                cases G,
-                sorry
-            end
+
+        section
+        lemma functor_eq : ∀ (F G : C ↝ D) (obj_eq : F.obj = G.obj) (map_eq : (eq.rec_on obj_eq F.map : (Π {X Y : C}, (X ⟶ Y) -> (G.obj X ⟶ G.obj Y))) = G.map), F = G
+        | ⟨F_obj, F_map, _, _ ⟩ ⟨ _, _ , _ , _ ⟩ rfl rfl := rfl        
+        lemma functor_extensionality : 
+            ∀   (F G : C ↝ D) 
+                (ob_eq : ∀ (X : C), F.obj X = G.obj X) 
+                (map_eq : ∀ (X Y : C) (f : X ⟶ Y), ((eq.rec_on (funext ob_eq : F.obj = G.obj) (F.map)): (Π {X Y}, (X ⟶ Y) -> (G.obj X ⟶ G.obj Y))) f = (G.map f)), F = G
+            | F G ob_eq map_eq := functor_eq F G (funext ob_eq) (funext (λ X, funext (λ Y, funext (λ f, map_eq X Y f))))
+        end
     end
 end category_theory
+
+
+section
+structure str2 :=
+    (A : ℕ -> Type)
+    (B : Π {a : ℕ} , A a)
+lemma str2_ext : ∀ (x y : str2) (A_eq : x.A = y.A) (B_eq : (eq.rec_on A_eq x.B : (Π a : ℕ , y.A a) ) = y.B), x = y
+| ⟨xA, xB⟩ ⟨_, _⟩ rfl rfl := rfl
+end
 
 
 lemma my_ext (α :Type)
@@ -43,6 +52,5 @@ structure mystr :=
     (p : A > 10)
 
 theorem mystr_eq : ∀ (x y : mystr) (A_eq : x.A = y.A) (B_eq : x.B = y.B), x = y
-| ⟨xA, xB, xp⟩ ⟨_, _, _⟩ rfl rfl := by sorry
-
+| ⟨xA, xB, xp⟩ ⟨_, _, _⟩ rfl rfl := rfl
 

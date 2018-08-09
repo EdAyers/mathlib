@@ -46,18 +46,13 @@ namespace functor
             {D : Type u2} [𝒟 : category.{u2 v2} D]
         include 𝒟
         include 𝒞
-        def functor_extensionality 
-            (F G : C ~> D) 
-            (ob_eq : ∀ (X : C), F X = G X) 
-            (map_eq : ∀ {X Y : C} (f : X ⟶ Y), (eq.rec_on (ob_eq Y) (eq.rec_on (ob_eq X) (F.map f)) : G X ⟶ G Y) = (G.map f)) 
-            : F = G 
-            :=
-            begin
-                cases F,
-                cases G,
-                --cases (funext ob_eq : F_obj = G_obj),
-                sorry
-             end
+        lemma functor_eq : ∀ (F G : C ~> D) (obj_eq : F.obj = G.obj) (map_eq : (eq.rec_on obj_eq F.map : (Π {X Y : C}, (X ⟶ Y) -> (G.obj X ⟶ G.obj Y))) = G.map), F = G
+        | ⟨F_obj, F_map, _, _ ⟩ ⟨ _, _ , _ , _ ⟩ rfl rfl := rfl        
+        lemma functor_extensionality : 
+            ∀   (F G : C ~> D) 
+                (ob_eq : ∀ (X : C), F.obj X = G.obj X) 
+                (map_eq : ∀ (X Y : C) (f : X ⟶ Y), ((eq.rec_on (funext ob_eq : F.obj = G.obj) (F.map)): (Π {X Y}, (X ⟶ Y) -> (G.obj X ⟶ G.obj Y))) f = (G.map f)), F = G
+            | F G ob_eq map_eq := functor_eq F G (funext ob_eq) (funext (λ X, funext (λ Y, funext (λ f, map_eq X Y f))))
     end
     section -- functor id
         variables (C : Type u1) [𝒞 : category.{u1 v1} C]
@@ -94,14 +89,10 @@ namespace functor
             {C : Type u1} [𝒞 : category.{u1 v1} C] 
             {D : Type u2} [𝒟 : category.{u2 v2} D]
         include 𝒞 𝒟
-        lemma comp_id (F : C ~> D) : F >>> (functor.id D) = F :=
-            let G := (F >>> (functor.id D)) in
-            begin
-                have obj_eq : ∀ A, F A = G A,  by simp [comp, functor.id],
-                have map_eq : ∀ (X Y : C) (f : X ⟶ Y), F.map f = G.map f,  by simp [comp, functor.id],
-                have : λ (X : C), {obj := λ (X : D), X, map := λ (_x _x_1 : D) (f : _x ⟶ _x_1), f, map_id := _, map_comp := _}.obj (F.obj X) = F.obj, by sorry,
-                simp [comp, functor.id], 
-            end
+        lemma comp_id (F : C ~> D) : F >>> (functor.id D) = F 
+        := by cases F;dsimp [comp, functor.id];congr
+        lemma id_comp (F : C ~> D) : (functor.id C) >>> F = F 
+        := by cases F; dsimp [comp, functor.id]; congr
     end
 
 
