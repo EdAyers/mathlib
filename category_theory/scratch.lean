@@ -18,6 +18,7 @@ namespace category_theory
                 (ob_eq : ∀ (X : C), F.obj X = G.obj X) 
                 (map_eq : ∀ (X Y : C) (f : X ⟶ Y), ((eq.rec_on (funext ob_eq : F.obj = G.obj) (F.map)): (Π {X Y}, (X ⟶ Y) -> (G.obj X ⟶ G.obj Y))) f = (G.map f)), F = G
             | F G ob_eq map_eq := functor_eq F G (funext ob_eq) (funext (λ X, funext (λ Y, funext (λ f, map_eq X Y f))))
+
         end
     end
 end category_theory
@@ -30,7 +31,6 @@ structure str2 :=
 lemma str2_ext : ∀ (x y : str2) (A_eq : x.A = y.A) (B_eq : (eq.rec_on A_eq x.B : (Π a : ℕ , y.A a) ) = y.B), x = y
 | ⟨xA, xB⟩ ⟨_, _⟩ rfl rfl := rfl
 end
-
 
 lemma my_ext (α :Type)
   (P Q : α -> Type)
@@ -54,3 +54,11 @@ structure mystr :=
 theorem mystr_eq : ∀ (x y : mystr) (A_eq : x.A = y.A) (B_eq : x.B = y.B), x = y
 | ⟨xA, xB, xp⟩ ⟨_, _, _⟩ rfl rfl := rfl
 
+inductive n 
+| z
+| s (_ : n) : n
+
+#check @n.no_confusion
+#check n.no_confusion_type
+
+open expr
