@@ -7,12 +7,49 @@ inductive node (k : Type u) (α : Type u) : ℕ -> Type u
 |Empty {} : node 0
 |Two {n}: node n -> (k × α) -> node n -> node (n + 1)
 |Three {n}: node n -> (k × α) -> node n -> (k × α) -> node n -> node (n + 1)
-
 namespace node
-variable {k : Type u}
+variables {k : Type u} [linear_order k]
 variables {α β δ: Type u}
-def empty : node k α 0 := node.Empty
+def mem : Π {n}, (k) -> (node k α n) -> Prop
+|(0) _ Empty := false
+|(n+1) i (Two l ⟨k,_⟩ r) := (mem i l) ∨ (k = i) ∨ (mem i r)
+|(n+1) i (Three l ⟨k1,_⟩ m ⟨k2,_⟩ r) := (mem i l) ∨ (k1 = i) ∨ (mem i m) ∨ (k2 = i) ∨ (mem i r)
 
+instance {n} : has_mem (k) (node k α n) := ⟨node.mem ⟩
+open nat
+def min : 
+Π {n},  node k α (n+1)         -> (k × α)
+|(0)   (Two Empty ka _)        := ka
+|(n+1) (Two l _ _)             := min l
+|(0)   (Three Empty ka _ _ _)  := ka
+|(n+1) (Three l _ _ _ _)       := min l
+
+def max : Π {n}, node k α (n+1) -> (k × α)
+|(0) (Two _ ka Empty) := ka
+|(n+1) (Two _ _ r) := max r
+|(0) (Three _ _ _ ka Empty) := ka
+|(n+1) (Three _ _ _ _ r) := max r
+
+def maxkey : Π {n}, node k α (n+1) -> k := λ n t, prod.fst (max t : k × α)
+def minkey : Π {n}, node k α (n+1) -> k := λ n t, prod.fst (min t : k × α)
+
+open ordering
+
+def is_ordered : Π {n}, node k α n -> Prop 
+|(0) Empty := true
+|(1) (Two Empty _ Empty) := true
+|(1) (Three Empty ⟨k1,_⟩ Empty ⟨k2,_⟩ Empty) := k1 < k2
+|(n+2) (Two l ⟨k,_⟩ r) := 
+    (is_ordered l) ∧ ((maxkey l) < k) 
+    ∧ (is_ordered  r) ∧ ( k < (minkey r))
+|(n+2) (Three l ⟨k1,_⟩ m ⟨k2,_⟩ r) := 
+    (k1 < k2)
+    ∧ (is_ordered  l) ∧ ( (maxkey l) < k1) 
+    ∧ (is_ordered  m) ∧ ( k1 < (minkey m)) ∧ ((maxkey m) < k2)
+    ∧ (is_ordered  r) ∧ ( k2 < (minkey r))
+
+variables (lt : k -> k -> Prop) [decidable_rel lt]
+def empty : node k α 0 := node.Empty
 def map (f : k -> α -> β)  : Π {n}, node k α n -> node k β n
 |0 Empty := Empty
 |n (Two l ⟨k,a⟩ r) := Two (map l) ⟨k, f k a⟩ (map r)
@@ -23,21 +60,6 @@ def fold (f : k -> α -> β -> β) : Π {n}, node k α n -> β -> β
 |n (Two l ⟨k,a⟩ r) b := fold r $ f k a $ fold l $ b
 |n (Three l ⟨k1,a1⟩ m ⟨k2,a2⟩ r) b := fold r $ f k2 a2 $ fold m $ f k1 a1 $ fold l $ b
 
-open nat
-def min : 
-Π {n},  node k α n              -> option (k × α)
-|(0)   Empty                   := none
-|(1)   (Two Empty ka _)        := some ka
-|(n+1) (Two l _ _)             := min l
-|(1)   (Three Empty ka _ _ _)  := some ka
-|(n+1) (Three l _ _ _ _)       := min l
-
-def max : Π {n}, node k α n -> option (k × α)
-|(0) Empty := none
-|(1) (Two _ ka Empty) := some ka
-|(n+1) (Two _ _ r) := max r
-|(1) (Three _ _ _ ka Empty) := ka
-|(n+1) (Three _ _ _ _ r) := max r
 
 def traverse {m : Type u → Type u} [applicative m] {α β : Type u} (f : k -> α → m β) : Π {n}, node k α n → m (node k β n)
 |(0) Empty := pure Empty
@@ -59,8 +81,7 @@ def find (p : k -> α -> bool): Π {n}, node k α n -> option (k × α)
     <|> (if (p k2 a2) then some ⟨k2,a2⟩ else none)
     <|> find r
 
-variables (lt : k -> k -> Prop) [decidable_rel lt]
-open ordering
+
 
 def get (i : k): Π {n}, node k α n -> option α
 |0 Empty := none
