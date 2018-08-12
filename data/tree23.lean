@@ -231,11 +231,11 @@ section --deletion
         end
 
     def delete_type (k : Type u) (α : Type u) : ℕ -> Type _
-    |0 := node k α 0 -> node k α 0
+    |0 := node k α 0 -> Σ (shrank : bool), node k α 0
     |(n+1) := node k α (n+1) -> Σ (shrank : bool), node k α (if shrank then n else (n+1))
 
     def delete (i : k) : Π (n : ℕ), delete_type k α n 
-    |(0) := λ h : node k α 0, h
+    |(0) := λ h : node k α 0, ⟨ff,h⟩
     |(n+1) := λ t : node k α (n+1), 
         match del lt (some i) (n+1) t with
         |Fail := ⟨ff, t⟩
@@ -245,4 +245,5 @@ section --deletion
 end
 end node
 
-
+-- TODO: proof that it's ordered
+-- TODO: proof that modify and delete do the right thing.
