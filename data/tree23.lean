@@ -107,7 +107,7 @@ section
 variables {n : ℕ} (t : node k α (n+1)) (io : is_ordered t)
 variables (i k₁ k₂ : k)
 
-lemma hello2 : (is_ordered t) -> (minkey t ≤ maxkey t) := begin
+lemma minkey_lt_maxkey : (is_ordered t) -> (minkey t ≤ maxkey t) := begin
     intros,
     induction n,
     cases t, cases t_a, cases t_a_1, cases t_a_2,
@@ -127,7 +127,7 @@ lemma hello2 : (is_ordered t) -> (minkey t ≤ maxkey t) := begin
     apply n_ih, assumption,
 end
 
-lemma hello : (is_ordered t) -> (i < minkey t) -> (i ∉ t) := begin
+lemma lt_minkey_imp_outside : (is_ordered t) -> (i < minkey t) -> (i ∉ t) := begin
     intros, 
     simp [has_mem.mem],
     induction n,
@@ -148,7 +148,7 @@ lemma hello : (is_ordered t) -> (i < minkey t) -> (i ∉ t) := begin
     repeat {cases a with _ a},
     have H1 : p_fst > i, from begin
         apply lt_trans,assumption,
-        apply lt_of_le_of_lt, apply hello2, assumption, assumption,
+        apply lt_of_le_of_lt, apply minkey_lt_maxkey, assumption, assumption,
     end,
     apply not_or, apply ne_of_gt,
     assumption,
@@ -161,12 +161,12 @@ lemma hello : (is_ordered t) -> (i < minkey t) -> (i ∉ t) := begin
     simp * at *,
     have H2 : i < p_fst, from begin
         transitivity, apply a_1,
-        apply lt_of_le_of_lt, apply hello2, assumption,
+        apply lt_of_le_of_lt, apply minkey_lt_maxkey, assumption,
         assumption,         
     end,
     have H3 : p_fst < q_fst, from calc
         p_fst < minkey m : by assumption
-        ...   ≤ maxkey m : by apply hello2; assumption
+        ...   ≤ maxkey m : by apply minkey_lt_maxkey; assumption
         ...   < q_fst    : by assumption
         ,
     have H4 : q_fst < minkey r, from by assumption,
@@ -175,22 +175,19 @@ lemma hello : (is_ordered t) -> (i < minkey t) -> (i ∉ t) := begin
     apply not_or, apply n_ih, assumption,
 
     show  i < minkey m, from calc
-        i < p_fst : H2
+          i < p_fst : H2
         ... < minkey m : by assumption,
     
     apply not_or, apply ne_of_gt,
-    show i < q_fst, from calc
-        i < p_fst : H2
+    from calc
+         i  < p_fst : H2
         ... < q_fst : H3,
     apply n_ih, assumption,
     from calc
-        i < p_fst : H2
+        i    < p_fst : H2
          ... < q_fst : H3
-        ... < minkey r : by assumption,
+         ... < minkey r : by assumption,
 end
-
-lemma has_is_mem : (i ∈ t) <-> ((has i t)) := by sorry
-
 end
 section
     inductive growth (k : Type u) (α : Type u) : ℕ -> Type u
