@@ -1,7 +1,6 @@
 
-
 meta def tree23.default_lt : tactic unit := `[apply has_lt.lt]
-/- Implementation of 23-trees -/
+/- Implementation of 23-trees. Just as an exercise more than anything else. -/
 universe u
 inductive node (k : Type u) (α : Type u) : ℕ -> Type u
 |Empty {} : node 0
@@ -10,28 +9,28 @@ inductive node (k : Type u) (α : Type u) : ℕ -> Type u
 namespace node
 variables {k : Type u} [decidable_linear_order k]
 variables {α β δ: Type u}
-def mem : Π {n}, (k) -> (node k α n) -> Prop
+@[simp] def mem : Π {n}, (k) -> (node k α n) -> Prop
 |(0) _ Empty := false
 |(n+1) i (Two l ⟨k,_⟩ r) := (mem i l) ∨ (k = i) ∨ (mem i r)
 |(n+1) i (Three l ⟨k1,_⟩ m ⟨k2,_⟩ r) := (mem i l) ∨ (k1 = i) ∨ (mem i m) ∨ (k2 = i) ∨ (mem i r)
 
-instance {n} : has_mem (k) (node k α n) := ⟨node.mem ⟩
+instance node_has_mem {n} : has_mem (k) (node k α n) := ⟨node.mem ⟩
 open nat
-def min : 
+@[simp] def min : 
 Π {n},  node k α (n+1)         -> (k × α)
 |(0)   (Two Empty ka _)        := ka
 |(n+1) (Two l _ _)             := min l
 |(0)   (Three Empty ka _ _ _)  := ka
 |(n+1) (Three l _ _ _ _)       := min l
 
-def max : Π {n}, node k α (n+1) -> (k × α)
+@[simp] def max : Π {n}, node k α (n+1) -> (k × α)
 |(0) (Two _ ka Empty) := ka
 |(n+1) (Two _ _ r) := max r
 |(0) (Three _ _ _ ka Empty) := ka
 |(n+1) (Three _ _ _ _ r) := max r
 
-def maxkey : Π {n}, node k α (n+1) -> k := λ n t, prod.fst (max t : k × α)
-def minkey : Π {n}, node k α (n+1) -> k := λ n t, prod.fst (min t : k × α)
+@[simp] def maxkey : Π {n}, node k α (n+1) -> k := λ n t, prod.fst (max t : k × α)
+@[simp] def minkey : Π {n}, node k α (n+1) -> k := λ n t, prod.fst (min t : k × α)
 
 open ordering
 
@@ -89,7 +88,7 @@ def find (p : k -> α -> bool): Π {n}, node k α n -> option (k × α)
     <|> (if (p k2 a2) then some ⟨k2,a2⟩ else none)
     <|> find r
 
-def get (i : k): Π {n}, node k α n -> option α
+@[simp] def get (i : k): Π {n}, node k α n -> option α
 |0 Empty := none
 |n (Two l ⟨k,a⟩ r) :=
     if i < k then get l
@@ -102,11 +101,97 @@ def get (i : k): Π {n}, node k α n -> option α
     else if i = k2 then some a2
     else get r
 
-def has {n} (i : k) : node k α n -> bool := option.is_some ∘ get i
+@[simp] def has {n} (i : k) : node k α n -> bool := option.is_some ∘ get i
 
-lemma is_ordered_implies_has_implies_mem {n:ℕ} (t : node k α n) (i : k) (io : is_ordered t)
-: (i ∈ t) <-> ((has i t)) := by sorry
+section 
+variables {n : ℕ} (t : node k α (n+1)) (io : is_ordered t)
+variables (i k₁ k₂ : k)
 
+lemma hello2 : (is_ordered t) -> (minkey t ≤ maxkey t) := begin
+    intros,
+    induction n,
+    cases t, cases t_a, cases t_a_1, cases t_a_2,
+    simp [*] at *,
+    cases t_a, cases t_a_1, cases t_a_2, cases t_a_3, cases t_a_4,
+    simp [*] at *, apply le_of_lt, assumption,
+    cases t with _ l p r,
+    cases p,
+    repeat {cases a with _ a},
+    apply le_trans, apply n_ih, assumption,
+    repeat {apply le_trans, apply le_of_lt, assumption},
+    apply n_ih, assumption,
+    cases t_a_1, cases t_a_3,
+    repeat {cases a with _ a},
+    apply le_trans, apply n_ih, assumption,
+    repeat {apply le_trans, apply le_of_lt, assumption},
+    apply n_ih, assumption,
+end
+
+lemma hello : (is_ordered t) -> (i < minkey t) -> (i ∉ t) := begin
+    intros, 
+    simp [has_mem.mem],
+    induction n,
+    cases t with _ l p r _ l p m q r,
+    cases p, cases l, cases r,
+    repeat {cases a with _ a},
+    simp * at *,
+    apply ne_of_gt, assumption,
+    cases p, cases q, cases l, cases m, cases r,
+    repeat {cases a with _ a},
+    simp * at *,
+    apply not_or, apply ne_of_gt, assumption,
+    apply ne_of_gt, apply gt_trans, assumption, assumption,
+    -- n+2 case
+    cases t with _ l p r _ l p m q r,
+    cases p,
+    simp * at *,
+    repeat {cases a with _ a},
+    have H1 : p_fst > i, from begin
+        apply lt_trans,assumption,
+        apply lt_of_le_of_lt, apply hello2, assumption, assumption,
+    end,
+    apply not_or, apply ne_of_gt,
+    assumption,
+
+    apply n_ih, assumption,
+    apply lt_of_lt_of_le, apply H1, apply le_of_lt, assumption,
+    
+    cases p, cases q,
+    repeat {cases a with _ a},
+    simp * at *,
+    have H2 : i < p_fst, from begin
+        transitivity, apply a_1,
+        apply lt_of_le_of_lt, apply hello2, assumption,
+        assumption,         
+    end,
+    have H3 : p_fst < q_fst, from calc
+        p_fst < minkey m : by assumption
+        ...   ≤ maxkey m : by apply hello2; assumption
+        ...   < q_fst    : by assumption
+        ,
+    have H4 : q_fst < minkey r, from by assumption,
+    
+    apply not_or, apply ne_of_gt, apply H2,
+    apply not_or, apply n_ih, assumption,
+
+    show  i < minkey m, from calc
+        i < p_fst : H2
+        ... < minkey m : by assumption,
+    
+    apply not_or, apply ne_of_gt,
+    show i < q_fst, from calc
+        i < p_fst : H2
+        ... < q_fst : H3,
+    apply n_ih, assumption,
+    from calc
+        i < p_fst : H2
+         ... < q_fst : H3
+        ... < minkey r : by assumption,
+end
+
+lemma has_is_mem : (i ∈ t) <-> ((has i t)) := by sorry
+
+end
 section
     inductive growth (k : Type u) (α : Type u) : ℕ -> Type u
     |Stay {n}: (node k α n) -> growth n
