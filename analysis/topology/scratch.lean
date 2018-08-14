@@ -37,10 +37,10 @@ lemma compact_subset_of_t2space_is_closed_2
     [t2_space α] (Y : set α) (sc : compact Y) : (is_closed Y) := 
     iff.elim_right is_closed_iff_nhds (λ y H1,
         exists.elim (sc (nhds y ⊓ principal Y) H1 inf_le_right) 
-        (λ a H2, exists.elim H2 (
-            assume H3 H4,
+        (λ a H2, exists.elim H2 (λ _ _,
             suffices y = a, from by rw this; assumption,
-            suffices nhds y ⊓ nhds a ⊓ principal Y ≠ ⊥, from eq_of_nhds_neq_bot $ not_bot_left _ _ this,
+            suffices nhds y ⊓ nhds a ⊓ principal Y ≠ ⊥, 
+                from eq_of_nhds_neq_bot $ not_bot_left _ _ this,
             by cc
         )
     )
