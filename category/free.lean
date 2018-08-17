@@ -8,33 +8,56 @@ Given a functor F and a type α.
 3. `free F α := quotient (Σ n:ℕ, roll^n false) R`
 5. Prove that `free F α` is a monad.
  -/
-
-@[simp] def step (f : Type u → Type u) (α : Type u) : (Π x : ℕ, (Π y:ℕ, y < x → Type u) → Type u)
-|(0) p := α
-|(succ n) p := 
-  let xn := p n $ less_than_or_equal.refl $ succ n in
-  f $ sum α xn
-open well_founded
-
-@[simp] def nfree (n : ℕ) (f : Type u → Type u) [functor f] (α : Type u) : Type u := fix nat.lt_wf (step f α) n
-
-namespace nfree
-variables {F : Type u → Type u} [functor F] {α β : Type u}
-def pure (a : α) : nfree 0 F α := a
-def from_pure : nfree 0 F α → α := begin intro fa, simp at fa, rewrite fix_eq at fa, simp at fa, assumption end
-def from_roll : Π {n:ℕ}, nfree (succ n) F α → F (sum α $ nfree n F α) :=
-begin intros, simp at a, rewrite fix_eq at a, simp at a, exact a end
-def to_roll : Π {n:ℕ}, F (sum α $ nfree n F α) → nfree (succ n) F α := λ n fs, begin simp, rewrite fix_eq, simp, assumption end
+import logic.relation
+universes u
+def sum.imp {α β γ δ : Type u} : (α → β) → (γ → δ) → (α ⊕ γ) → (β ⊕ δ) := λ l r, @sum.rec α γ (λ _, β ⊕ δ) (sum.inl ∘ l) (sum.inr ∘ r)
 open sum
-def sumrec {n : ℕ} (f₁ : α → β) (f₂ : nfree n F α → nfree n F β) : (α ⊕ nfree n F α) → (β ⊕ nfree n F β)
-:= @sum.rec α (nfree n F α) (λ _,β ⊕ nfree n F β) (λ a, inl $ f₁ a) (λ c, inr $ f₂ c)
-
-def map (f : α → β) : Π {n : ℕ}, nfree n F α → nfree n F β
-|(0) xs := pure $ f $ from_pure xs
-|(succ n) xs := 
-  to_roll $ (@sum.rec α (nfree n F α) (λ _,β ⊕ nfree n F β) (λ a, inl $ f a) (λ c, inr $ @map n c)) <$> from_roll xs
+open nat
 
 
+@[simp] def roll (F : Type u → Type u) [functor F] (α : Type u) : ℕ → Type u
+|0 :=  (ulift empty) 
+|(succ n) :=  α ⊕ F (roll n)
 
-end nfree
+namespace roll
+variables {F : Type u → Type u} [functor F] {α β : Type u}
+def inj0 : roll F α 0 → β := begin intros, simp at a, cases a, exact empty.rec _ a end
+def unroll {n:ℕ} : roll F α (succ n) → α ⊕ F (roll F α n) := begin intros, simp at a, assumption end
+def reroll {n:ℕ} : α ⊕ F(roll F α n) → roll F α (succ n) := begin intros, simp, assumption end 
+def inj : Π {n:ℕ}, roll F α n → roll F α (succ n)
+|(0) a := inj0 a
+|(succ n) a := begin simp at a, simp, cases a, exact sum.inl a, apply sum.inr,have h := inj <$> a, exact h,end
+def map (f : α → β) : Π {n:ℕ}, roll F α n → roll F β n
+|(0) a := inj0 a
+|(succ n) a := reroll $ sum.imp (f) (functor.map map) $ unroll $ a
+end roll
 
+section
+variables (F : Type u → Type u) [functor F] (α : Type u)
+def fr := Σ n:ℕ, roll F α n
+@[simp] def R : fr F α → fr F α → Prop
+|⟨n₁,r₁⟩ ⟨n₂,r₂⟩ := ∃ p : succ n₁ = n₂, (eq.rec_on p $ roll.inj r₁ : roll F α n₂) = r₂
+def free := quot (R F α)
+end
+
+namespace free
+variables {F : Type u → Type u} [functor F] {α β : Type u}
+def pure : α → free F α
+|a := quot.mk (R F α) ⟨1, inl a⟩
+
+def map {α β : Type u} (f : α → β): free F α → free F β :=
+begin
+  apply quot.lift, swap,
+  intros, apply quot.mk, cases a with n ra, split, apply roll.map f, assumption,
+  intros a b r,
+  cases a with n₁ r₁, cases b with n₂ r₂, 
+  simp [R] at r, cases r with p q, simp,
+  clear n₂, 
+
+  apply quot.ind, intros,
+  simp *,
+  cases r_b with n₃ r₃,
+  cases r_a_1,
+end
+
+end free
