@@ -96,21 +96,21 @@ section -- comp assoc lemma
       {C₃ : Type u₃} [𝒞₃ : category.{u₃ v₃} C₃] 
       {C₄ : Type u₄} [𝒞₄ : category.{u₄ v₄} C₄] 
     include 𝒞₁ 𝒞₂ 𝒞₃ 𝒞₄
-    lemma comp_assoc (F : C₁ ↝ C₂ ) (G : C₂  ↝ C₃) (H : C₃ ↝ C₄) 
-        : (F ⋙ G) ⋙ H = F ⋙ (G ⋙ H) 
-        := by simp [comp]
+    lemma comp_assoc (F : C₁ ↝ C₂) (G : C₂  ↝ C₃) (H : C₃ ↝ C₄) 
+        : (F ⋙ G) ⋙ H = F ⋙ (G ⋙ H) := 
+    by simp [comp]
 end
 section --comp_id and id_comp
   variables 
-      {C : Type u₁} [𝒞 : category.{u₁ v₁} C] 
-      {D : Type u₂} [𝒟 : category.{u₂ v₂} D]
+    {C : Type u₁} [𝒞 : category.{u₁ v₁} C] 
+    {D : Type u₂} [𝒟 : category.{u₂ v₂} D]
   include 𝒞 𝒟
   @[simp] lemma comp_id (F : C ↝ D) 
-    : F ⋙ (functor.id D) = F 
-    := by cases F;dsimp [comp, functor.id];congr
+  : F ⋙ (functor.id D) = F := 
+  by cases F;dsimp [comp, functor.id];congr
   @[simp] lemma id_comp (F : C ↝ D) 
-    : (functor.id C) ⋙ F = F 
-    := by cases F; dsimp [comp, functor.id]; congr
+    : (functor.id C) ⋙ F = F := 
+  by cases F; dsimp [comp, functor.id]; congr
 end
 end functor
 end category_theory
