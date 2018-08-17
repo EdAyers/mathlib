@@ -17,7 +17,7 @@ import .category
 
 namespace category_theory
 
-universes u₁ v₁ u₂ v₂ u₃ v₃
+universes u₁ v₁ u₂ v₂ u₃ v₃ u₄ v₄ 
 
 /--
 `functor C D` represents a functor between categories `C` and `D`.
@@ -38,6 +38,7 @@ restate_axiom functor.map_comp
 attribute [simp,ematch] functor.map_id_lemma functor.map_comp_lemma
 
 infixr ` ↝ `:70 := functor       -- type as \lea --
+infixr ` ~> `:70 := functor       -- type as \lea --
 
 namespace functor
 
@@ -83,10 +84,33 @@ def comp (F : C ↝ D) (G : D ↝ E) : C ↝ E :=
   map_comp := begin /- `obviously'` says: -/ intros, simp end }
 
 infixr ` ⋙ `:80 := comp
+infixr ` >>> `:80 := comp
 
 @[simp] lemma comp_obj (F : C ↝ D) (G : D ↝ E) (X : C) : (F ⋙ G) X = G (F X) := rfl
 @[simp] lemma comp_map (F : C ↝ D) (G : D ↝ E) (X Y : C) (f : X ⟶ Y) : (F ⋙ G).map f = G.map (F.map f) := rfl
 end
-
+section -- comp assoc lemma
+    variables
+      {C₁ : Type u₁} [𝒞₁ : category.{u₁ v₁} C₁]
+      {C₂ : Type u₂} [𝒞₂ : category.{u₂ v₂} C₂] 
+      {C₃ : Type u₃} [𝒞₃ : category.{u₃ v₃} C₃] 
+      {C₄ : Type u₄} [𝒞₄ : category.{u₄ v₄} C₄] 
+    include 𝒞₁ 𝒞₂ 𝒞₃ 𝒞₄
+    lemma comp_assoc (F : C₁ ↝ C₂ ) (G : C₂  ↝ C₃) (H : C₃ ↝ C₄) 
+        : (F ⋙ G) ⋙ H = F ⋙ (G ⋙ H) 
+        := by simp [comp]
+end
+section --comp_id and id_comp
+  variables 
+      {C : Type u₁} [𝒞 : category.{u₁ v₁} C] 
+      {D : Type u₂} [𝒟 : category.{u₂ v₂} D]
+  include 𝒞 𝒟
+  @[simp] lemma comp_id (F : C ↝ D) 
+    : F ⋙ (functor.id D) = F 
+    := by cases F;dsimp [comp, functor.id];congr
+  @[simp] lemma id_comp (F : C ↝ D) 
+    : (functor.id C) ⋙ F = F 
+    := by cases F; dsimp [comp, functor.id]; congr
+end
 end functor
 end category_theory
