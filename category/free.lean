@@ -1,37 +1,13 @@
-/- The free monad defined using well_founded recursion? -/
+/- The free monad.-/
 
-/-Recall:
-fix f := f (fix f)
-free f a := a + f (free f a) === fix (λ x, a + f x)
-
-fix (λ x, 1 + x) ≃ nat
-fix (λ x, 1 + a × x) ≃ list a
-
-What do I need to do to define the fixpoint functor?
-fix : (α -> α) -> α
-I can't do this. But I can do.
-fix : (f : Type → Type)
-      (wf : (α : Type) -> well_founded rel -> ∃ (frel : f α → f α → Prop), well_founded frel)
-      (α : Type, wf) -> Type wf
-
-How!?
-    
--/
-
-/- So:
-
-
-`free id x := x + free id x === x + x + x + x + ... := nat × x`
-`free (λ x, a × x) x := x + a × (x + ) === nat × x + nat`
-`fre
-
-
+/- The plan:
+Given a functor F and a type α.
+1. Define roll : λ x, α + F(x)
+2. Show that `roll^n false` injects into `roll^(succ n) false`
+3. Define an equivalence rel `R` on `Σ n:ℕ, roll^n false`, they are the same when one injects to the other.
+3. `free F α := quotient (Σ n:ℕ, roll^n false) R`
+5. Prove that `free F α` is a monad.
  -/
-
-
-universe u
-open nat
-
 
 @[simp] def step (f : Type u → Type u) (α : Type u) : (Π x : ℕ, (Π y:ℕ, y < x → Type u) → Type u)
 |(0) p := α
@@ -57,6 +33,8 @@ def map (f : α → β) : Π {n : ℕ}, nfree n F α → nfree n F β
 |(0) xs := pure $ f $ from_pure xs
 |(succ n) xs := 
   to_roll $ (@sum.rec α (nfree n F α) (λ _,β ⊕ nfree n F β) (λ a, inl $ f a) (λ c, inr $ @map n c)) <$> from_roll xs
+
+
 
 end nfree
 
