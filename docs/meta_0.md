@@ -12,7 +12,7 @@ Finally, I am trying to write this for a mathematician who wants to gain an unde
 Suppose we want come up with a new type theory `T`. This is composed of:
 
 - A term structure -- things like "if `s` and `t` are terms, then `s $ t` is a term. So a term is just a tree full of variables and constants and binders and so on.
-- A set of inference rules on typed terms -- "if `s : A -> B` and `t : A`, then `s $ t :  B`". These are often written as $(s : A -> B) (t : A) ⊢ (s $ t :  B)$ or as
+- A set of inference rules on typed terms -- "if `s : A -> B` and `t : A`, then `s $ t :  B`". These are often written as `(s : A -> B) (t : A) ⊢ (s $ t :  B)` or as
   ```
   s : A -> B
   t : A
@@ -23,7 +23,7 @@ Suppose we want come up with a new type theory `T`. This is composed of:
 - Term reductions. These are some transformations that one can perform on terms to do computation.
   So for example we have β-reduction which says that `(λ x, T) $ y` reduces to `T` where all occurrences of `x` are substituted with `y`.
   Typically, the reductions are and reduction of the `rec` functions on the various inductive types such as ℕ and `prod`. See the _Reduction vs Evaluation_ section for more information.
-- TODO: should I talk about Judgements as well? I don't want this bit to be overly longwinded.
+- [TODO]: should I talk about Judgements as well? I don't want this bit to be overly longwinded.
 
 Now we have specified the type theory, we need to write a computer program which will be able to construct elements of this type theory and perform reductions on them.
 This is what Lean does for a version of type theory called the _Calculus of Inductive Constructions_ or _CIC_.
@@ -34,12 +34,12 @@ The idea of logic is to construct mathematical structures within which we can do
 In type theory, the structures are trees of terms which obey the given inference rules.
 
 But in order to construct these objects, we need to do activities that are _outside_ the structure: deciding what type theory to use, writing the code that manipulates trees of terms, applying reductions to terms, parsing strings into terms, checking that the inference rules are being applied correctly and so on.
-We call these __meta-level__ activities. Anything to do with the mathematics: proving a theorem, writing a definition, defining an inductive type ... is called __object-level__ or __theory-level__ (TODO what is the preferred nomenclature here?)
+We call these __meta-level__ activities. Anything to do with the mathematics: proving a theorem, writing a definition, defining an inductive type ... is called __object-level__ or __theory-level__ ([TODO] what is the preferred nomenclature here?)
 
-In most systems, the meta-level activities are done in a different language to the one that we use to do mathematics. In Isabelle, the meta-level language is ML and Scala. In Coq, it's OCAML (TODO IIRC). In AGDA it's Haskell. In Lean, most of the meta-level code is written in C++.
+In most systems, the meta-level activities are done in a different language to the one that we use to do mathematics. In Isabelle, the meta-level language is ML and Scala. In Coq, it's OCAML ([TODO] IIRC). In AGDA it's Haskell. In Lean, most of the meta-level code is written in C++.
 
 Now, the cool thing about Lean is that it exposes structures within the _theory-level_ which can manipulate the _meta-level_.
-So for example, there is an inductive type called `expr`, which just looks like any other inductive type. But if we write an _object-level_ function that manipulates `expr` in some way, then Lean can __reflect__ (TODO is this the right word?) this definition into a _meta-level_ function that can be used to prove things.
+So for example, there is an inductive type called `expr`, which just looks like any other inductive type. But if we write an _object-level_ function that manipulates `expr` in some way, then Lean can __reflect__ ([TODO] is this the right word?) this definition into a _meta-level_ function that can be used to prove things.
 
 This means that we can write code within Lean that changes how Lean performs its meta-level activities.
 Lean carefully restricts what you are allowed to do though, so you can't (in theory) change the meta-level activities enough to prove `false`!
@@ -100,7 +100,7 @@ Declarations can also be tagged with things called `attributes`. These are bits 
 
 ### Getting `names` in Lean
 
-We can use backticks ````` to access names from Lean objects.
+We can use backticks `` ` `` to access names from Lean objects.
 
 * `` `my.name`` is the way to refer to a name. It is essentially a form of string quoting; no checks are done besides parsing dots into namespaced names
 * ``` ``some ``` does name resolution at parse time, so it expands to `` `option.some`` and will error if the given name doesn't exist
@@ -145,9 +145,9 @@ Going the other way is called __abstraction__.
 As fun as it would be to type out `expr`s in terms of `var`, `lam`, etc and doing all of the de-Bruijn index bookkepping yourself,
 Lean provides a syntax to quickly convert any Lean expression into an `expr`.
 
-* ```(my expr)`` constructs an expression at parse time, resolving what it can in the current (of the tactic) namespace
-* `````(my pexpr)``` constructs a pre-expression at parse time, resolving in the current (of the tactic) namespace
-* ```````(my pexpr)```` constructs a pexpr, but defers resolution to run time (of the tactic), meaning that any references will be resolved in the namespace of the begin end block of the user, rather than the tactic itself
+* `` `(my expr)`` constructs an expression at parse time, resolving what it can in the current (of the tactic) namespace
+* ``` ``(my pexpr)``` constructs a pre-expression at parse time, resolving in the current (of the tactic) namespace
+* ```` ```(my pexpr)```` constructs a pexpr, but defers resolution to run time (of the tactic), meaning that any references will be resolved in the namespace of the begin end block of the user, rather than the tactic itself
 
 The process of taking a string of unicode characters and converting them into a Lean expression is called _elaboration_. I will come back to elaboration.
 
@@ -173,7 +173,7 @@ For example, `lam "f" nat (app [0] [0])`.
 So just having an `expr` term tree is not enough to count as something that Lean can use to prove theorems.
 Lean has to be able to show that the `expr` could have been built using the inference rules of CIC. We say that an `expr` with this property is __valid__.
 
-Lean does this by running an `expr` through a __type-checker__. The type-checker takes an `expr` and recursively type-checks it's sub-`expr`s until eventually erroring or returning a new `expr` giving the type of the provided `expr.
+Lean does this by running an `expr` through a __type-checker__. The type-checker takes an `expr` and recursively type-checks it's sub-`expr`s until eventually erroring or returning a new `expr` giving the type of the provided `expr`.
 Type-checking is done by Lean's __kernel__. 
 If there is a bug in the kernel, then you can make nonsense terms which type-check and the entire system will become useless. 
 So it's important that the kernel is small so that it can be easily reviewed by lots of humans for bugs. 
