@@ -196,3 +196,5 @@ Briefly, we turn a string of text into a Lean expression by first parsing the te
 
 Similarly, when we make a proof using tactics, we use tactics to figure out all of the details of the `expr` representing the proof term.
 Let's look at how Lean does this for tactics first. And then look at the elaborator.
+
+Read on at Part 1! [TODO] link.

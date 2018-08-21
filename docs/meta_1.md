@@ -2,7 +2,8 @@
 
 ## How tactics work.
 
-I would first like to remind everyone that I have massively simplified how Lean actually works. My goal is to give a kind of working abstraction that tactic writers can use to reason about how Lean will behave.
+I would first like to remind everyone that I have massively simplified how Lean actually works to the point that the Lean developers will cringe when they read this.
+My goal is to give a kind of working abstraction that tactic writers can use to reason about how Lean will behave.
 
 Suppose that we are trying to construct a valid `expr` of a certain type `T` using tactics. If `T : Prop`, then this is the same task as proving the statement `T`. 
 We might start by writing (say):
@@ -20,7 +21,7 @@ p q r : Prop
 ```
 
 This is Lean's `tactic_state`. When you plant your cursor in the `begin` block (or on a placeholder "`_`"), Lean knows that you are trying to create an `expr` which typechecks to `∀ (p q r : Prop), (p → q → r) → (p → q) → p → q × r`.
-We don't always know how to write down an `expr` straight away, so instead we want to build the `expr` term from the root up, and the bits that we haven't finished yet are left as 'holes' that we promise to figure out later.
+We don't always know how to write down an `expr` straight away, so instead we want to build the `expr` from the root up, and the bits that we haven't finished yet are left as 'holes' that we promise to figure out later.
 These holes are called __metavariables__, a metavariable is an `expr` that will be filled in with a proper `expr` later.
 
 Another new concept we need are __local constants__. These are all of the things to the left of the `⊢` in the tactic state. In our case `p`,`q` and `r`. Local constants are the same as regular `const` `expr`s, but they only exist in our current scope.
@@ -31,7 +32,7 @@ inductive expr :=
 |mvar (pretty_name : name) (unique_name : name) (type : expr) : expr
 |local_const (pretty_name : name) (unique_name : name) (type : expr) : expr
 ```
-[TODO] should I add `binder_info`?
+([TODO] should I add `binder_info`?)
 Note how `mvar`  has a `type` argument. That means that we can run an `expr` containing metavariables through the kernel type-checker, and it will still be able to say what the type of the `expr` is, but it will not count as a valid `expr` until all of the `mvar`s are replaced with other valid `expr`s of the correct type. The type argument on the `mvar` may _itself_ contain other `mvars`. 
 
 The `pretty_name` is what you see in the output window, the `unique_name` is used internally to uniquely identify the `mvar` or `local_const`. Lean has both names because the unique names would make the output window look cluttered.
@@ -310,7 +311,7 @@ Let's write out all of the fundamental reductions we have in type theory. We wri
 - __ζ-reduction__ is reduction of `let` bindings: `let x : a := b in c ~~> c[x/b]`.
 - __η-equivalence__ is the rule that  `(λ x, f x)` can be reduced to `f`.
 - __ι-reduction__ is reducing recursors on inductive datatypes: for example `nat.rec i r (succ n) ~~> r n (nat.rec i r n)` and `nat.rec i r 0 ~~> i`. Reducing any recursively defined function.
-- __proof-irrelevance__ if `a b : Prop`, then `a` is equivalent to `b`.
+- __proof-irrelevance__ if `P : Prop` and `a b : P`, then `a` is equivalent to `b`.
 
 Interestingly, ι-reduction and proof-irrelevance together make definitional equality undecidable. But only cases which we don't really care about are undecidable so it's ok. See section 3.7 of the [Lean Reference Manual](https://leanprover.github.io/reference/lean_reference.pdf).
 
