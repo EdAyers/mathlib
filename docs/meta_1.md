@@ -61,6 +61,8 @@ Similarly, a metavariable context has a dictionary of __metavariable declaration
 
 The metavariable context also has an __assignments__ dictionary of `expr`s indexed by `name`. Once a metavariable gets assigned -- i.e. the hole is _filled_ by another `expr` -- the `expr` it is assigned is stored in here.
 If we try to assign the expression `t` to the metavariable `m`, it will fail when:
+
+- It already has an entry in the assignments table.
 - The types are not equal. [TODO] up to matching? unify? Is it always true that if `t`'s type mentions `m`, then `t` must also mention `m`?
 - `t` depends on `m`.
 - `t` depends on a local constant that is not in `m`'s local context snapshot.
@@ -72,7 +74,6 @@ Similarly, there is also an assignments dictionary for type universe (`level`) m
 ### The tactic state lifecycle
 
 Now let's go back to putting the cursor in the `begin` block. Lean then initialises the tactic state as follows.
-- It already has an entry in the assignments table.
 - Any argument of the lemma (stuff which looks like `(x : α)` before the `:=`) gets added to the local context.
 - Any names in a `variables` declaration that appear somewhere in the type definition or arguments are added to the local context.
 - Any implicit typeclass instances used are added to the local context. (TODO the rules around when typeclasses are added seems quite finicky).
