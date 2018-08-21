@@ -37,7 +37,7 @@ We call these __meta-level__ activities. Anything to do with the mathematics: pr
 
 In most systems, the meta-level activities are done in a different language to the one that we use to do mathematics. In Isabelle, the meta-level language is ML and Scala. In Coq, it's OCAML. In AGDA it's Haskell. In Lean, most of the meta-level code is written in C++.
 
-Now, the cool thing about Lean is that it exposes structures within the _theory-level_ which can manipulate the _meta-level_.
+Now, the cool thing about Lean is that it exposes structures within the _object-level_ which can manipulate the _meta-level_.
 So for example, there is an inductive type called `expr`, which just looks like any other inductive type. But if we write an _object-level_ function that manipulates `expr` in some way, then Lean can __reflect__ ([TODO] is this the right word?) this definition into a _meta-level_ function that can be used to prove things.
 
 This means that we can write code within Lean that changes how Lean performs its meta-level activities.
