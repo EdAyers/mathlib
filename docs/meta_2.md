@@ -1,8 +1,9 @@
 
 # How `meta` works. Part 2: Elaboration
 
-Now that we have seen how tactics work. We can discuss elaboration. Recall that elaboration is the process of filling in all of the implicit arguments and typeclass instances that the user didn't want to write down.
+THIS SECTION IS STILL A WORK IN PROGRESS AND SO IS INCOHERENT.
 
+Now that we have seen how tactics work. We can discuss elaboration. Recall that elaboration is the process of filling in all of the implicit arguments and typeclass instances that the user didn't want to write down.
 
 -----------
 [INFO] End of draft and start of ideas board.
