@@ -322,7 +322,7 @@ Interestingly, ι-reduction and proof-irrelevance together make definitional equ
 - `head_eta`
 - `head_zeta`
 
-### WTF is WHNF?
+### What is WHNF?
 
 'WHNF' stands for "weak head normal form". This basically means "apply the minimal amount of reductions so that the root of the `expr` can't be reduced further. Often this is less work than fully reducing the expression and often we only care what the root looks like anyway.
 There is [a stack overflow answer](https://stackoverflow.com/questions/6872898/haskell-what-is-weak-head-normal-form) that explains WHNF well. Finding the WHNF is decidable but in general but can take arbitrarily long to compute.
@@ -397,7 +397,6 @@ The configuration structure is called `apply_cfg` and has the following fields:
 - `non_dep_only` --  only set as goals the metavariables `?a`, `?b` etc. Not the `?x`, `?y` ones.
 - `non_dep_first` -- change the ordering of the goals so that the non-dependent goals are first in the goal queue. The idea is that once you have solved the non_dep goals it is likely that the dependent goals will have been unified.
 - `all` -- Turn all of the arguments in to goals in the order that they appeared in `fn`'s type.
-```
 
 [TODO] does the unifier treat implicit arguments differently?
 
