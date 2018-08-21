@@ -19,7 +19,7 @@ Suppose we want come up with a new type theory `T`. This is composed of:
   ----------
   s $ t : B
   ```
-  Type theory papers are littered with pages and pages of these inference rules. They define what it means for a term to be well-typed. [TODO] find a paper giving the inference rules for CIC used in Lean.
+  Type theory papers are littered with pages and pages of these inference rules. They define what it means for a term to be well-typed. Mario has written a doc containing the [inference rules for Lean](https://github.com/digama0/lean-type-theory/releases/download/v0.21/main.pdf).
 - Term reductions. These are some transformations that one can perform on terms to do computation.
   So for example we have β-reduction which says that `(λ x, T) $ y` reduces to `T` where all occurrences of `x` are substituted with `y`.
   Typically, the reductions are and reduction of the `rec` functions on the various inductive types such as ℕ and `prod`. See the _Reduction vs Evaluation_ section for more information.
