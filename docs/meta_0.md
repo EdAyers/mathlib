@@ -23,7 +23,6 @@ Suppose we want come up with a new type theory `T`. This is composed of:
 - Term reductions. These are some transformations that one can perform on terms to do computation.
   So for example we have β-reduction which says that `(λ x, T) $ y` reduces to `T` where all occurrences of `x` are substituted with `y`.
   Typically, the reductions are reduction of lambdas, let bindings and reduction of the `rec` functions on the various inductive types such as ℕ and `prod`. See the section on reduction rules in the next part.
-- [TODO]: should I talk about Judgements as well? I don't want this bit to be overly longwinded.
 
 Now we have specified the type theory, we need to write a computer program which will be able to construct elements of this type theory and perform reductions on them.
 This is what Lean does for a version of type theory called the _Calculus of Inductive Constructions_ or _CIC_.
