@@ -72,9 +72,10 @@ Similarly, there is also an assignments dictionary for type universe (`level`) m
 ### The tactic state lifecycle
 
 Now let's go back to putting the cursor in the `begin` block. Lean then initialises the tactic state as follows.
+- It already has an entry in the assignments table.
 - Any argument of the lemma (stuff which looks like `(x : α)` before the `:=`) gets added to the local context.
 - Any names in a `variables` declaration that appear somewhere in the type definition or arguments are added to the local context.
-- Any implicit typeclass instances used are added to the local context (TODO the rules around when typeclasses are added seems quite finicky).
+- Any implicit typeclass instances used are added to the local context. (TODO the rules around when typeclasses are added seems quite finicky).
 - A fresh metavariable `M` is created.
 - The `result` of the tactic state is set to be `M`.
 - The `goals` are set to be `[M]`.
