@@ -34,9 +34,9 @@ The idea of logic is to construct mathematical structures within which we can do
 In type theory, the structures are trees of terms which obey the given inference rules.
 
 But in order to construct these objects, we need to do activities that are _outside_ the structure: deciding what type theory to use, writing the code that manipulates trees of terms, applying reductions to terms, parsing strings into terms, checking that the inference rules are being applied correctly and so on.
-We call these __meta-level__ activities. Anything to do with the mathematics: proving a theorem, writing a definition, defining an inductive type ... is called __object-level__ or __theory-level__ ([TODO] what is the preferred nomenclature here?)
+We call these __meta-level__ activities. Anything to do with the mathematics: proving a theorem, writing a definition, defining an inductive type ... is called __object-level__.
 
-In most systems, the meta-level activities are done in a different language to the one that we use to do mathematics. In Isabelle, the meta-level language is ML and Scala. In Coq, it's OCAML ([TODO] IIRC). In AGDA it's Haskell. In Lean, most of the meta-level code is written in C++.
+In most systems, the meta-level activities are done in a different language to the one that we use to do mathematics. In Isabelle, the meta-level language is ML and Scala. In Coq, it's OCAML. In AGDA it's Haskell. In Lean, most of the meta-level code is written in C++.
 
 Now, the cool thing about Lean is that it exposes structures within the _theory-level_ which can manipulate the _meta-level_.
 So for example, there is an inductive type called `expr`, which just looks like any other inductive type. But if we write an _object-level_ function that manipulates `expr` in some way, then Lean can __reflect__ ([TODO] is this the right word?) this definition into a _meta-level_ function that can be used to prove things.
@@ -44,6 +44,8 @@ So for example, there is an inductive type called `expr`, which just looks like 
 This means that we can write code within Lean that changes how Lean performs its meta-level activities.
 Lean carefully restricts what you are allowed to do though, so you can't (in theory) change the meta-level activities enough to prove `false`!
 Lean does this with trust levels. When you write some Lean code that is going to be reflected up to meta, you have to add the keyword `meta` to your definition. Once this happens, Lean no longer trusts that the code is sound. So you can't use your `meta` tagged object to construct objects which aren't tagged with `meta`.
+
+The `meta` keyword in Lean is a bit of a misnomer - it is more accurate to call this "unsafe", because it enables a number of unsound mechanisms, and while it is useful for metaprogramming it is not exclusively used for this. Not all metaprogramming things are meta, and not all meta things are used in metaprogramming.
 
 ## Setting the stage
 
