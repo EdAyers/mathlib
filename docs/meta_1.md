@@ -141,6 +141,7 @@ meta constant has_attribute : name → name → tactic nat
 - `get_goals : tactic (list expr)`. Dump the list of metavariables which are goals right now.
 - [TODO] more to come.
 
+
 ### Goal tagging
 Goals can be tagged with a list of arbitrary names.
 ```lean
@@ -157,16 +158,42 @@ meta constant set_tag (g : expr) (t : tag) : tactic unit
 meta constant get_tag (g : expr) : tactic tag
 ```
 
-### Assorted tactics for manipulating expressions
+### Assorted tactics for inspecting and manipulating expressions
 
 A lot of the time you shouldn't use the `expr`-making equipment in the `expr` namespace, but instead use the ones found in `tactic`. This is because judging whether an `expr` is valid depends on the context which only the tactic state can know about. 
 
-- `infer_type : expr → tactic expr` figure out the type of the given expr or fail using the kernel's typechecker.
+- `infer_type : expr → tactic expr` figure out the type of the given expr using the kernel's typechecker.
 - ``get_unused_name (n : name := `_x) (i : option nat := none) : tactic name`` returns `n` unless something already has name `n` in the context, in which case it returns `n_X` where `X` is the first natural number such that this name isn't taken. You can also explicitly pass a number using the `i` argument. `get_unused_name` will _only_ look for clashing names in the local context. So doing ``get_unused_name `x`` twice will not return `x` then `x_1`.
 - `eval_expr : Π α : Type [reflected α], expr → tactic α` tries to typecheck the given `expr`, and if it's `α` then it returns `α`. So this tactic kind of does the same job as anti-quotations.  [TODO] what is the `reflected α` typeclass doing? I don't understand
 - `mk_app` and friends. `mk_app fn args transparency : tactic expr` looks at the type signature for `fn` and tries to match each of the `args` with an arg of `fn` and makes metavariables for the arguments it can't figure out. The exact mechanics of matching and transparency are discussed later.
 - `to_expr : pexpr → tactic expr`. Basically tries to fill in  
 - `type_check` Type check the given expr with respect to the current goal. [TODO] what does "with respect to the current goal" mean?
+
+### fun_info
+
+A lot of the time, you want to think of `app (app (app f x) y) z` as just `f` applied to arguments `[x,y,z]`.
+`library/init/meta/fun_info.lean` is your friend here.
+
+Suppose expression `f`'s type is a telescope of `pi`s (that is, of the form `Π x, Π y, ... r`).
+Call the `x`, `y` etc __parameters__ and `r` the __result type__.
+Then the `get_fun_info f` tactic will return a `fun_info` object, which has fields:
+- `params` which is a list of `param_info` objects. One for each parameter in `f`'s type. A `param_info` is
+    + `is_implicit` -- Is the parameter implicit (that is, in curly braces)?
+    + `is_inst_implicit` -- Is the parameter an implicit typeclass instance argument?
+    + `is_prop` -- is it a proposition? Ie: is it's type of type `Prop`?
+    + `has_fwd_deps` -- Do later paramters or the result type depend on this parameter?
+    + `back_deps : list nat` -- a list of references to the indices of the previous parameters that it depends on.
+- `result_deps : list nat` -- the paramters that the result type depends on.
+
+`get_fun_info` doesn't give the types of the parameter or the result type. You have to inspect these manually using pattern matching on the type.
+
+[TODO] Does `get_fun_info` work when it has already been applied?
+
+[TODO] I don't understand subsingletons. 
+What is a subsingleton? It seems to be any type which is isomorphic to a member of Prop. Ie, it's either uninhabited or has one member.
+- `get_subsingleton_info`
+- `get_spec_prefix_size`
+- `get_spec_subsingleton_info`
 
 ### Tactics for dealing with typeclasses.
 
