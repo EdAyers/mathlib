@@ -17,7 +17,21 @@ I've removed the letters which clash with latin letters.
  α β γ δ ε ζ η θ ι κ λ μ ν ξ π ρ ς σ τ υ φ χ ψ ω 
  ∂   ϑ ϰ ϕ ϱ ϖ
 ```
-
+## Letter-like mathematical symbols in unicode.
+The unicode standard messes up how it codes mathematical symbols. This is because there are two charts:
+- [Letterlike Symbols](http://www.unicode.org/charts/PDF/U2100.pdf) `U+2100-214F`
+- [Mathematical Alphanumeric Symbols](http://www.unicode.org/charts/PDF/U1D400.pdf) `U+1D400–1D7FF`
+Some characters such as what we would write as `\mathbb{R}` in LaTeX, appear in both of these charts. Both `U+211D` (`ℝ`) and `U+1D549` (`𝕉`) look like the symbol we use for the reals but are actually distinct unicode characters and so Lean will treat them differently. The actual unicode chart says `U+1D549` is blank but many fonts render it to look like the `U+211D`. I think the convention is to use the `U+2100-214F` chart unless it doesn't have your character, and then use the `U+1D400–1D7FF` chart.
+### The 'letterlike symbols`
+```
+U+2100  ℀ ℁ ℂ ℃ ℄ ℅ ℆ ℇ ℈ ℉ ℊ ℋ ℌ ℍ ℎ ℏ
+U+2110  ℐ ℑ ℒ ℓ ℔ ℕ № ℗ ℘ ℙ ℚ ℛ ℜ ℝ ℞ ℟
+U+2120  ℠ ℡ ™ ℣ ℤ ℥ Ω ℧ ℨ ℩ K Å ℬ ℭ ℮ ℯ
+U+2130  ℰ ℱ Ⅎ ℳ ℴ ℵ ℶ ℷ ℸ ℹ ℺ ℻ ℼ ℽ ℾ ℿ
+U+2140  ⅀ ⅁ ⅂ ⅃ ⅄ ⅅ ⅆ ⅇ ⅈ ⅉ ⅊ ⅋ ⅌ ⅍ ⅎ ⅏
+```
+## Chart __1D400–1D7FF__
+All of the following characters are exclusively in the `U+1D400–1D7FF` chart. I have ommitted the characters that don't look good in my font (PragmataPro). You should resist using these characters as they can make things confusing.
 ### Mathematical Bold
 [WARNING] These are not in Lean yet.
 ```
@@ -56,8 +70,26 @@ Type with `\bbX`.
  𝕒 𝕓 𝕔 𝕕 𝕖 𝕗 𝕘 𝕙 𝕚 𝕛 𝕜 𝕝 𝕞 𝕟 𝕠 𝕡 𝕢 𝕣 𝕤 𝕥 𝕦 𝕧 𝕨 𝕩 𝕪 𝕫 
  𝟘 𝟙 𝟚 𝟛 𝟜 𝟝 𝟞 𝟟 𝟠 𝟡
 ```
-Unicode messed up some mathematical symbols. Notably `ℝ` and `𝕉` are different. There are some fonts where the second R won't render.
+
 I have removed Mathematical Monospace and Sans-Serif because in Pragmata Pro the glyphs are identical to the ASCII letters.
+
+## Accents and so on.
+
+I am mostly against decorating letters with accents so I am not in a rush to fill out this section. There are also many Unicode caveats. For example 
+- `ä` is `U+00E4`
+- `a̎` is `U+0061 U+0308` and uses a [combining diaresis](https://www.unicode.org/charts/PDF/U0300.pdf). 
+
+It's an absolute minefield.
+
+## Subscripts and superscripts
+
+```
+² ³
+U+2070  ⁰ ⁱ   ⁴ ⁵ ⁶ ⁷ ⁸ ⁹ ⁺ ⁻ ⁼ ⁽ ⁾ ⁿ
+U+2080  ₀ ₁ ₂ ₃ ₄ ₅ ₆ ₇ ₈ ₉ ₊ ₋ ₌ ₍ ₎
+U+2090  ₐ ₑ ₒ ₓ ₔ ₕ ₖ ₗ ₘ ₙ ₚ ₛ ₜ
+```
+
 ## Brackets
 ```
 ( ) [ ] { }
@@ -74,7 +106,7 @@ These don't have completions:
 
 ## Symbols
 ```
-∀ ∂ ∃ ∄ ∅ ∝ ∞ √ ∛ ∜ ∫ ∮ ∱ ∲ ∳ ∓ ±
+∀ ∂ ∃ ∄ ∅ ∝ ∞ √ ∛ ∜ ∫ ∮ ∱ ∲ ∳ ∓ ± ∆ ∇
 ```
 ### big ops
 ```
@@ -96,12 +128,12 @@ These don't have completions:
 ≺ ≻ ≼ ≽ ⊀ ⊁     ⋏ ⋎
 ⊂ ⊃ ⊆ ⊇ ⊄ ⊅ ⊈ ⊉ ∩ ∪
 ∈ ∋     ∉ ∌
-⊲ ⊳ ⊴ ⊵         ∆ ∇
+⊲ ⊳ ⊴ ⊵         
 ⊏ ⊐ ⊑ ⊒         ⊓ ⊔ 
 ⋐⋑            ⋒⋓
 
-≃≄≅≇≈≉≊≋≍≎≏≐≑≒≓
-≖≗≘≙≚≛≜≝≞≟≠≡≢≣
+≃ ≄ ≅ ≇ ≈ ≉ ≊ ≋ ≍ ≎ ≏ ≐ ≑ ≒ ≓
+≖ ≗ ≘ ≙ ≚ ≛ ≜ ≝ ≞ ≟ ≠ ≡ ≢ ≣
 ≪ ≫ ⋘ ⋙
 ⊢ ⊣ ⊤ ⊥ ⊦ ⊧ ⊨ ⊩ ⊪ ⊫
 ```
