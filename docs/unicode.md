@@ -200,3 +200,6 @@ And avoiding these:
 ⇴ ⟴
 ```
 
+## Emoji
+
+Emoji are not allowed as identifiers. Maybe one day we will be able to finish off a lemma with `show : 🤯, by exact 💩 💥`. But today is not that day.
