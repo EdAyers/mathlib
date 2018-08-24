@@ -8,8 +8,8 @@ I like PragmataPro because it keeps to the letter grid even with the more obscur
 ### A warning
 There are serious risks in allowing any unicode symbol to be a valid Lean identifier:
 There are so many caveats to Unicode:
-- There are invisible unicode characters.
-- There are unicode characters for spaces. Chart [`U+2000`](http://www.unicode.org/charts/PDF/U2000.pdf) is particularly dangerous.
+- There are unicode characters that don't render to anything. Null characters.
+- There are many different unicode characters for spaces. Chart [`U+2000`](http://www.unicode.org/charts/PDF/U2000.pdf) is particularly dangerous.
 - Some glyphs (what the character looks like) will have different unicode code points (the number `U+XXXX`). Eg `ℝ` and `𝕉`.
 - Some of the [Mathematical Alphanumeric Symbols](http://www.unicode.org/charts/PDF/U1D400.pdf) glyphs look the same as the ASCII symbols in some programming fonts. It looks like Lean outright refuses to accept a `.lean` file that uses some of these codepoints. Which is good.
 
@@ -48,7 +48,8 @@ U+2130  ℰ ℱ Ⅎ ℳ ℴ ℵ ℶ ℷ ℸ ℹ ℺ ℻ ℼ ℽ ℾ ℿ
 U+2140  ⅀ ⅁ ⅂ ⅃ ⅄ ⅅ ⅆ ⅇ ⅈ ⅉ ⅊ ⅋ ⅌ ⅍ ⅎ ⅏
 ```
 ## Chart __1D400–1D7FF__
-All of the following characters are exclusively in the `U+1D400–1D7FF` chart. I have ommitted the characters that don't look good in my font (PragmataPro). You should resist using these characters as they can make things confusing.
+All of the following characters are exclusively in the `U+1D400–1D7FF` chart. I have ommitted the characters that don't look good in my font (PragmataPro) and which are not allowed in Lean. 
+I have also ommitted characters that clash with the `letterlike symbols` chart.
 <!--
 ### Mathematical Bold
 [WARNING] These are not in Lean yet.
@@ -70,21 +71,21 @@ All of the following characters are exclusively in the `U+1D400–1D7FF` chart. 
 ### Mathematical Script
 Type with `\McX`
 ```
- 𝒜 𝒝 𝒞 𝒟 𝒠 𝒡 𝒢 𝒣 𝒤 𝒥 𝒦 𝒧 𝒨 𝒩 𝒪 𝒫 𝒬 𝒭 𝒮 𝒯 𝒰 𝒱 𝒲 𝒳 𝒴 𝒵 
- 𝒶 𝒷 𝒸 𝒹 𝒺 𝒻 𝒼 𝒽 𝒾 𝒿 𝓀 𝓁 𝓂 𝓃 𝓄 𝓅 𝓆 𝓇 𝓈 𝓉 𝓊 𝓋 𝓌 𝓍 𝓎 𝓏 
+ 𝒜   𝒞 𝒟     𝒢     𝒥 𝒦     𝒩 𝒪 𝒫 𝒬   𝒮 𝒯 𝒰 𝒱 𝒲 𝒳 𝒴 𝒵 
+ 𝒶 𝒷 𝒸 𝒹   𝒻   𝒽 𝒾 𝒿 𝓀 𝓁 𝓂 𝓃   𝓅 𝓆 𝓇 𝓈 𝓉 𝓊 𝓋 𝓌 𝓍 𝓎 𝓏 
 ```
 I am omitting _Mathematical Bold Script_ because it looks too similar.
 ### Mathematical Fraktur
 Type with `\MfX`
 ```
- 𝔄 𝔅 𝔆 𝔇 𝔈 𝔉 𝔊 𝔋 𝔌 𝔍 𝔎 𝔏 𝔐 𝔑 𝔒 𝔓 𝔔 𝔕 𝔖 𝔗 𝔘 𝔙 𝔚 𝔛 𝔜 𝔝 
+ 𝔄 𝔅   𝔇 𝔈 𝔉 𝔊     𝔍 𝔎 𝔏 𝔐 𝔑 𝔒 𝔓 𝔔   𝔖 𝔗 𝔘 𝔙 𝔚 𝔛 𝔜   
  𝔞 𝔟 𝔠 𝔡 𝔢 𝔣 𝔤 𝔥 𝔦 𝔧 𝔨 𝔩 𝔪 𝔫 𝔬 𝔭 𝔮 𝔯 𝔰 𝔱 𝔲 𝔳 𝔴 𝔵 𝔶 𝔷 
 ```
 I am omitting _Mathematical Bold Fraktur_ because it looks too similar.
 ### Mathematical Double-Struck
 Type with `\bbX`.
 ```
- 𝔸 𝔹 𝔺 𝔻 𝔼 𝔽 𝔾 𝔿 𝕀 𝕁 𝕂 𝕃 𝕄 𝕅 𝕆 𝕇 𝕈 𝕉 𝕊 𝕋 𝕌 𝕍 𝕎 𝕏 𝕐 𝕑 
+ 𝔸 𝔹   𝔻 𝔼 𝔽 𝔾   𝕀 𝕁 𝕂 𝕃 𝕄   𝕆       𝕊 𝕋 𝕌 𝕍 𝕎 𝕏 𝕐   
  𝕒 𝕓 𝕔 𝕕 𝕖 𝕗 𝕘 𝕙 𝕚 𝕛 𝕜 𝕝 𝕞 𝕟 𝕠 𝕡 𝕢 𝕣 𝕤 𝕥 𝕦 𝕧 𝕨 𝕩 𝕪 𝕫 
  𝟘 𝟙 𝟚 𝟛 𝟜 𝟝 𝟞 𝟟 𝟠 𝟡
 ```
