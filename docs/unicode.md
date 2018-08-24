@@ -1,9 +1,12 @@
+# Unicode in Lean
+
 A list of commonly used symbols in Lean. 
-I reccomend using this document by copy and pasting the symbol you want into a `.lean` file in vscode and then hovering over the symbol to see the completion string for it. 
+I recommend using this document by copy and pasting the symbol you want into a `.lean` file in vscode and then hovering over the symbol to see the completion string for it. 
 I've taken the unicode charts and pruned out the pointless characters that nobody uses.
+
 I am using the font [PragmataPro](https://www.fsd.it/shop/fonts/pragmatapro/?attribute_weights=PragmataPro+Regular+with+PP+Mono+Regular&attribute_license-for=desktop). 
 In which all of the below symbols are rendered nicely and distinguishably.
-I like PragmataPro because it keeps to the letter grid even with the more obscure symbols.
+I like PragmataPro because it keeps to the letter grid even with the more obscure symbols. It also gives two characters of space to arrows like `→`. The bad news is you have to pay for this font.
 
 ### A warning
 There are serious risks in allowing any unicode symbol to be a valid Lean identifier:
@@ -38,6 +41,7 @@ I've removed the letters which clash with latin letters.
 The unicode standard messes up how it codes mathematical symbols. This is because there are two charts:
 - [Letterlike Symbols](http://www.unicode.org/charts/PDF/U2100.pdf) `U+2100-214F`
 - [Mathematical Alphanumeric Symbols](http://www.unicode.org/charts/PDF/U1D400.pdf) `U+1D400–1D7FF`
+
 Some characters such as what we would write as `\mathbb{R}` in LaTeX, appear in both of these charts. Both `U+211D` (`ℝ`) and `U+1D549` (`𝕉`) look like the symbol we use for the reals but are actually distinct unicode characters and so Lean will treat them differently. The actual unicode chart says `U+1D549` is blank but many fonts render it to look like the `U+211D`. I think the convention is to use the `U+2100-214F` chart unless it doesn't have your character, and then use the `U+1D400–1D7FF` chart.
 ### The 'letterlike symbols`
 ```
@@ -48,8 +52,8 @@ U+2130  ℰ ℱ Ⅎ ℳ ℴ ℵ ℶ ℷ ℸ ℹ ℺ ℻ ℼ ℽ ℾ ℿ
 U+2140  ⅀ ⅁ ⅂ ⅃ ⅄ ⅅ ⅆ ⅇ ⅈ ⅉ ⅊ ⅋ ⅌ ⅍ ⅎ ⅏
 ```
 ## Chart __1D400–1D7FF__
-All of the following characters are exclusively in the `U+1D400–1D7FF` chart. I have ommitted the characters that don't look good in my font (PragmataPro) and which are not allowed in Lean. 
-I have also ommitted characters that clash with the `letterlike symbols` chart.
+All of the following characters are exclusively in the `U+1D400–1D7FF` chart. I have omitted the characters that don't look good in my font (PragmataPro) and which are not allowed in Lean. 
+I have also omitted characters that clash with the `letterlike symbols` chart.
 <!--
 ### Mathematical Bold
 [WARNING] These are not in Lean yet.
@@ -90,15 +94,13 @@ Type with `\bbX`.
  𝟘 𝟙 𝟚 𝟛 𝟜 𝟝 𝟞 𝟟 𝟠 𝟡
 ```
 
-I have removed Mathematical Monospace and Sans-Serif because in Pragmata Pro the glyphs are identical to the ASCII letters.
-
 ## Accents and so on.
 
 I am mostly against decorating letters with accents so I am not in a rush to fill out this section. There are also many Unicode caveats. For example:
 
 - `ë` is `U+00EB` (Latin)
 - `ё` is `U+0450` (Cyrillic)
-- `e̎` is `U+0065 U+0308` and uses a [combining diaresis](https://www.unicode.org/charts/PDF/U0300.pdf). Sometimes the combining marks look nice and sometimes the font butchers them.
+- `e̎` is `U+0065 U+0308` and uses a [combining diaeresis](https://www.unicode.org/charts/PDF/U0300.pdf). Sometimes the combining marks look nice and sometimes the font butchers them.
 
 It's an absolute minefield.
 
@@ -118,7 +120,7 @@ U+2090  ₐ ₑ ₒ ₓ ₔ ₕ ₖ ₗ ₘ ₙ ₚ ₛ ₜ
 ‹ › « » 
 ⁅ ⁆ ⌈ ⌉ ⌊ ⌋ ⌜ ⌝ ⌞ ⌟
 ```
-These don't have completions:
+These don't have completions but I like them:
 ```
 ⟮ ⟯ ⟬ ⟭   
 ⦋ ⦌ ⦍ ⦎ ⦏ ⦐
