@@ -4,6 +4,23 @@ I've taken the unicode charts and pruned out the pointless characters that nobod
 I am using the font [PragmataPro](https://www.fsd.it/shop/fonts/pragmatapro/?attribute_weights=PragmataPro+Regular+with+PP+Mono+Regular&attribute_license-for=desktop). 
 In which all of the below symbols are rendered nicely and distinguishably.
 I like PragmataPro because it keeps to the letter grid even with the more obscure symbols.
+
+### A warning
+There are serious risks in allowing any unicode symbol to be a valid Lean identifier:
+There are so many caveats to Unicode:
+- There are invisible unicode characters.
+- There are unicode characters for spaces. Chart [`U+2000`](http://www.unicode.org/charts/PDF/U2000.pdf) is particularly dangerous.
+- Some glyphs (what the character looks like) will have different unicode code points (the number `U+XXXX`). Eg `ℝ` and `𝕉`.
+- Some of the [Mathematical Alphanumeric Symbols](http://www.unicode.org/charts/PDF/U1D400.pdf) glyphs look the same as the ASCII symbols in some programming fonts. It looks like Lean outright refuses to accept a `.lean` file that uses some of these codepoints. Which is good.
+
+Why is this a problem? Because it means we can appear to prove impossible results:
+```lean
+def A := true -- hide this line deep in another lean file.
+
+def Α := false -- this is actually a capital alpha.
+example : A := trivial -- Lean is inconsistent!?!?!?
+```
+
 ## Letters
 ```
  A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
@@ -32,6 +49,7 @@ U+2140  ⅀ ⅁ ⅂ ⅃ ⅄ ⅅ ⅆ ⅇ ⅈ ⅉ ⅊ ⅋ ⅌ ⅍ ⅎ ⅏
 ```
 ## Chart __1D400–1D7FF__
 All of the following characters are exclusively in the `U+1D400–1D7FF` chart. I have ommitted the characters that don't look good in my font (PragmataPro). You should resist using these characters as they can make things confusing.
+<!--
 ### Mathematical Bold
 [WARNING] These are not in Lean yet.
 ```
@@ -48,7 +66,7 @@ All of the following characters are exclusively in the `U+1D400–1D7FF` chart. 
  𝛼 𝛽 𝛾 𝛿 𝜀 𝜁 𝜂 𝜃 𝜄 𝜅 𝜆 𝜇 𝜈 𝜉 𝜋 𝜌 𝜍 𝜎 𝜏 𝜐 𝜑 𝜒 𝜓 𝜔 
  𝜕 𝜖 𝜗 𝜘 𝜙 𝜚 𝜛 
 ```
-
+-->
 ### Mathematical Script
 Type with `\McX`
 ```
