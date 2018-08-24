@@ -75,9 +75,11 @@ I have removed Mathematical Monospace and Sans-Serif because in Pragmata Pro the
 
 ## Accents and so on.
 
-I am mostly against decorating letters with accents so I am not in a rush to fill out this section. There are also many Unicode caveats. For example 
-- `ä` is `U+00E4`
-- `a̎` is `U+0061 U+0308` and uses a [combining diaresis](https://www.unicode.org/charts/PDF/U0300.pdf). 
+I am mostly against decorating letters with accents so I am not in a rush to fill out this section. There are also many Unicode caveats. For example:
+
+- `ë` is `U+00EB` (Latin)
+- `ё` is `U+0450` (Cyrillic)
+- `e̎` is `U+0065 U+0308` and uses a [combining diaresis](https://www.unicode.org/charts/PDF/U0300.pdf). Sometimes the combining marks look nice and sometimes the font butchers them.
 
 It's an absolute minefield.
 
