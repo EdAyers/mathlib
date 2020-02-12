@@ -1,4 +1,7 @@
 import .category order ..order.galois_connection ..order.complete_lattice ..data.set
+import category_theory.whiskering
+import category_theory.opposites
+
 namespace category_theory
 universes u v w
 variables {C : Type u}
@@ -279,8 +282,14 @@ instance dense.grothendieck : grothendieck (dense C) :=
     end
 }
 
-def atomic (C : Type u) [𝒞 : category.{v} C] : sieve_set C := λ X, {S | ∃ x, x ∈ S.arrows}
+/-- The atomic sieveset just contains all of the non-empty sieves. -/
+def atomic (C : Type u) [𝒞 : category.{v} C] : sieve_set C :=
+λ X, {S | ∃ x, x ∈ S.arrows}
 
+/-- The atomic sieveset is a grothendieck topology when it is inhabited and
+satisfies the 'square' property. Which says that every span `Y ⟶ X ⟵ Z` forms a commuting
+diagram.
+-/
 instance atomic.grothendieck
   (square :
     ∀ {X Y Z : C}
@@ -291,8 +300,7 @@ instance atomic.grothendieck
     (inh : ∀ (X : C), inhabited (slice C X))
       : grothendieck (atomic C)
        :=
-{ max := λ X,
-  begin
+{ max := λ X, begin
     refine ⟨_,_⟩,
     apply inhabited.default,
     rw [←max_is_top],
@@ -306,12 +314,20 @@ instance atomic.grothendieck
     simp, rw d,
     apply sieve.subs, assumption
    end
-, trans :=
-begin
-  rintros _ _ ⟨f,fS⟩ _ Ra,
-  rcases Ra f fS with ⟨g,h₁⟩,
-  refine ⟨_,h₁⟩
-end
+, trans := begin
+    rintros _ _ ⟨f,fS⟩ _ Ra,
+    rcases Ra f fS with ⟨g,h₁⟩,
+    refine ⟨_,h₁⟩
+  end
 }
+
+/- ... Talks about the Zariski Site for a section ... -/
+
+/- Sheaves on a site.
+I have to define presheaves again because mathlib only has them wrt topologies.
+ -/
+
+def presheaf (C : Type u) [𝒞 : category.{v} C] := (opposite C) ⥤ Type
+
 
 end category_theory
