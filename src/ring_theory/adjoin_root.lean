@@ -26,6 +26,8 @@ variables [comm_ring α] (f : polynomial α)
 
 instance : comm_ring (adjoin_root f) := ideal.quotient.comm_ring _
 
+instance : inhabited (adjoin_root f) := ⟨0⟩
+
 instance : decidable_eq (adjoin_root f) := classical.dec_eq _
 
 variable {f}
@@ -53,7 +55,7 @@ quotient.induction_on' (root : adjoin_root f)
     show finsupp.sum f (λ (e : ℕ) (a : α), mk (C a) * mk g ^ e) = 0,
     by simp only [hg, (is_semiring_hom.map_pow (mk : polynomial α → adjoin_root f) _ _).symm,
          (is_ring_hom.map_mul (mk : polynomial α → adjoin_root f)).symm];
-      rw [finsupp.sum, finset.sum_hom (mk : polynomial α → adjoin_root f),
+      rw [finsupp.sum, f.support.sum_hom (mk : polynomial α → adjoin_root f),
         show finset.sum _ _ = _, from sum_C_mul_X_eq _, mk_self])
   (show (root : adjoin_root f) = mk X, from rfl)
 

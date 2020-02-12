@@ -384,6 +384,7 @@ instance nat_sub : has_sub (α →₀ ℕ) := ⟨zip_with (λ m n, m - n) (nat.s
 
 @[simp] lemma nat_sub_apply {g₁ g₂ : α →₀ ℕ} {a : α} :
   (g₁ - g₂) a = g₁ a - g₂ a := rfl
+
 end nat_sub
 
 section add_monoid
@@ -535,7 +536,7 @@ instance [add_comm_group β] : add_comm_group (α →₀ β) :=
 @[simp] lemma sum_apply [has_zero β₁] [add_comm_monoid β]
   {f : α₁ →₀ β₁} {g : α₁ → β₁ → α →₀ β} {a₂ : α} :
   (f.sum g) a₂ = f.sum (λa₁ b, g a₁ b a₂) :=
-(finset.sum_hom (λf : α →₀ β, f a₂)).symm
+(f.support.sum_hom (λf : α →₀ β, f a₂)).symm
 
 lemma support_sum [has_zero β₁] [add_comm_monoid β]
   {f : α₁ →₀ β₁} {g : α₁ → β₁ → (α →₀ β)} :
@@ -558,7 +559,7 @@ finset.sum_add_distrib
 
 @[simp] lemma sum_neg [add_comm_monoid β] [add_comm_group γ] {f : α →₀ β}
   {h : α → β → γ} : f.sum (λa b, - h a b) = - f.sum h :=
-finset.sum_hom (@has_neg.neg γ _)
+f.support.sum_hom (@has_neg.neg γ _)
 
 @[simp] lemma sum_sub [add_comm_monoid β] [add_comm_group γ] {f : α →₀ β}
   {h₁ h₂ : α → β → γ} :
@@ -649,11 +650,11 @@ by rw [multiset.sum_cons, multiset.map_cons, multiset.sum_cons, sum_add_index h�
 
 lemma multiset_map_sum [has_zero β] {f : α →₀ β} {m : γ → δ} {h : α → β → multiset γ} :
   multiset.map m (f.sum h) = f.sum (λa b, (h a b).map m) :=
-(finset.sum_hom _).symm
+(f.support.sum_hom _).symm
 
 lemma multiset_sum_sum [has_zero β] [add_comm_monoid γ] {f : α →₀ β} {h : α → β → multiset γ} :
   multiset.sum (f.sum h) = f.sum (λa b, multiset.sum (h a b)) :=
-(finset.sum_hom multiset.sum).symm
+(f.support.sum_hom multiset.sum).symm
 
 section map_range
 variables
@@ -978,7 +979,7 @@ variables [add_comm_monoid β]
 
 lemma subtype_domain_sum {s : finset γ} {h : γ → α →₀ β} :
   (s.sum h).subtype_domain p = s.sum (λc, (h c).subtype_domain p) :=
-eq.symm (finset.sum_hom _)
+eq.symm (s.sum_hom _)
 
 lemma subtype_domain_finsupp_sum {s : γ →₀ δ} {h : γ → δ → α →₀ β} :
   (s.sum h).subtype_domain p = s.sum (λc d, (h c d).subtype_domain p) :=
@@ -986,7 +987,7 @@ subtype_domain_sum
 
 lemma filter_sum (s : finset γ) (f : γ → α →₀ β) :
   (s.sum f).filter p = s.sum (λa, filter p (f a)) :=
-(finset.sum_hom (filter p)).symm
+(s.sum_hom (filter p)).symm
 
 end comm_monoid
 
@@ -1075,7 +1076,7 @@ end
 @[simp] lemma count_to_multiset (f : α →₀ ℕ) (a : α) :
   f.to_multiset.count a = f a :=
 calc f.to_multiset.count a = f.sum (λx n, (add_monoid.smul n {x} : multiset α).count a) :
-    (finset.sum_hom _).symm
+    (f.support.sum_hom $ multiset.count a).symm
   ... = f.sum (λx n, n * ({x} : multiset α).count a) : by simp only [multiset.count_smul]
   ... = f.sum (λx n, n * (x :: 0 : multiset α).count a) : rfl
   ... = f a * (a :: 0 : multiset α).count a : sum_eq_single _
@@ -1367,14 +1368,14 @@ begin
  rw comap_domain_apply
 end
 
-def split_support : finset ι := finset.image (sigma.fst) l.support
+def split_support : finset ι := l.support.image sigma.fst
 
 lemma mem_split_support_iff_nonzero (i : ι) :
   i ∈ split_support l ↔ split l i ≠ 0 :=
 begin
   classical,
-  rw [split_support, mem_image, ne.def, ← support_eq_empty,
-    ← exists_mem_iff_ne_empty, split, comap_domain],
+  rw [split_support, mem_image, ne.def, ← support_eq_empty, ← ne.def,
+    ← finset.nonempty_iff_ne_empty, split, comap_domain, finset.nonempty],
   simp
 end
 
@@ -1487,6 +1488,21 @@ lemma le_iff [canonically_ordered_monoid α] (f g : σ →₀ α) :
   f ≤ g ↔ ∀ s ∈ f.support, f s ≤ g s :=
 ⟨λ h s hs, h s,
 λ h s, if H : s ∈ f.support then h s H else (not_mem_support_iff.1 H).symm ▸ zero_le (g s)⟩
+
+@[simp] lemma add_eq_zero_iff [canonically_ordered_monoid α] (f g : σ →₀ α) :
+  f + g = 0 ↔ f = 0 ∧ g = 0 :=
+begin
+  split,
+  { assume h,
+    split,
+    all_goals
+    { ext s,
+      suffices H : f s + g s = 0,
+      { rw add_eq_zero_iff at H, cases H, assumption },
+      show (f + g) s = 0,
+      rw h, refl } },
+  { rintro ⟨rfl, rfl⟩, simp }
+end
 
 attribute [simp] to_multiset_zero to_multiset_add
 

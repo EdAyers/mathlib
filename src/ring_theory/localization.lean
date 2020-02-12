@@ -105,6 +105,8 @@ by refine
   refine (quotient.sound $ r_of_eq _),
   simp [mul_left_comm, mul_add, mul_comm] }
 
+instance : inhabited (localization α S) := ⟨0⟩
+
 instance of.is_ring_hom : is_ring_hom (of : α → localization α S) :=
 { map_add := λ x y, quotient.sound $ by simp,
   map_mul := λ x y, quotient.sound $ by simp,
@@ -556,7 +558,7 @@ begin
   ext b,
   rw [h.image_eq_preimage, set.preimage, set.mem_set_of_eq,
     mem_non_zero_divisors_iff_ne_zero, mem_non_zero_divisors_iff_ne_zero, ne.def],
-  exact h.to_add_equiv.symm.map_ne_zero_iff b
+  exact h.symm.map_ne_zero_iff
 end
 
 end map

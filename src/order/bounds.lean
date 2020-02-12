@@ -101,15 +101,15 @@ eq_of_is_greatest_of_is_greatest
 lemma is_glb_iff_eq_of_is_glb : is_glb s a₁ → (is_glb s a₂ ↔ a₁ = a₂) :=
 is_greatest_iff_eq_of_is_greatest
 
-lemma ne_empty_of_is_lub [no_bot_order α] (hs : is_lub s a) : s ≠ ∅ :=
+lemma nonempty_of_is_lub [no_bot_order α] (hs : is_lub s a) : s.nonempty :=
 let ⟨a', ha'⟩ := no_bot a in
-assume h,
+ne_empty_iff_nonempty.1 $ assume h,
 have a ≤ a', from hs.right (by simp [upper_bounds, h]),
 lt_irrefl a $ lt_of_le_of_lt this ha'
 
-lemma ne_empty_of_is_glb [no_top_order α] (hs : is_glb s a) : s ≠ ∅ :=
+lemma nonempty_of_is_glb [no_top_order α] (hs : is_glb s a) : s.nonempty :=
 let ⟨a', ha'⟩ := no_top a in
-assume h,
+ne_empty_iff_nonempty.1 $ assume h,
 have a' ≤ a, from hs.right (by simp [lower_bounds, h]),
 lt_irrefl a $ lt_of_lt_of_le ha' this
 
@@ -180,16 +180,12 @@ begin
   exact lt_irrefl _ (lt_of_lt_of_le az (hy zy)),
 end
 
-end linear_order
-
-section decidable_linear_order
-variables [decidable_linear_order α] [densely_ordered α]
+local attribute [instance] classical.DLO
 
 lemma is_glb_Ioo (hab : a₁ < a₂) : is_glb (Ioo a₁ a₂) a₁ :=
 begin
-  refine ⟨λx hx, le_of_lt hx.1, λy hy, _⟩,
-  by_contradiction h,
-  have : a₁ < min a₂ y, by { rw lt_min_iff, exact ⟨hab, not_le.1 h⟩ },
+  refine ⟨λx hx, le_of_lt hx.1, λy hy, le_of_not_lt $ λ h, _⟩,
+  have : a₁ < min a₂ y, by { rw lt_min_iff, exact ⟨hab, h⟩ },
   rcases dense this with ⟨z, az, zy⟩,
   rw lt_min_iff at zy,
   exact lt_irrefl _ (lt_of_le_of_lt (hy ⟨az, zy.1⟩) zy.2)
@@ -197,9 +193,8 @@ end
 
 lemma is_glb_Ioc (hab : a₁ < a₂) : is_glb (Ioc a₁ a₂) a₁ :=
 begin
-  refine ⟨λx hx, le_of_lt hx.1, λy hy, _⟩,
-  by_contradiction h,
-  have : a₁ < min a₂ y, by { rw lt_min_iff, exact ⟨hab, not_le.1 h⟩ },
+  refine ⟨λx hx, le_of_lt hx.1, λy hy, le_of_not_lt $ λ h, _⟩,
+  have : a₁ < min a₂ y, by { rw lt_min_iff, exact ⟨hab, h⟩ },
   rcases dense this with ⟨z, az, zy⟩,
   rw lt_min_iff at zy,
   exact lt_irrefl _ (lt_of_le_of_lt (hy ⟨az, le_of_lt zy.1⟩) zy.2)
@@ -207,9 +202,8 @@ end
 
 lemma is_lub_Ioo (hab : a₁ < a₂) : is_lub (Ioo a₁ a₂) a₂ :=
 begin
-  refine ⟨λx hx, le_of_lt hx.2, λy hy, _⟩,
-  by_contradiction h,
-  have : max a₁ y < a₂, by { rw max_lt_iff, exact ⟨hab, not_le.1 h⟩ },
+  refine ⟨λx hx, le_of_lt hx.2, λy hy, le_of_not_lt $ λ h, _⟩,
+  have : max a₁ y < a₂, by { rw max_lt_iff, exact ⟨hab, h⟩ },
   rcases dense this with ⟨z, az, zy⟩,
   rw max_lt_iff at az,
   exact lt_irrefl _ (lt_of_lt_of_le az.2 (hy ⟨az.1, zy⟩))
@@ -217,15 +211,14 @@ end
 
 lemma is_lub_Ico (hab : a₁ < a₂) : is_lub (Ico a₁ a₂) a₂ :=
 begin
-  refine ⟨λx hx, le_of_lt hx.2, λy hy, _⟩,
-  by_contradiction h,
-  have : max a₁ y < a₂, by { rw max_lt_iff, exact ⟨hab, not_le.1 h⟩ },
+  refine ⟨λx hx, le_of_lt hx.2, λy hy, le_of_not_lt $ λ h, _⟩,
+  have : max a₁ y < a₂, by { rw max_lt_iff, exact ⟨hab, h⟩ },
   rcases dense this with ⟨z, az, zy⟩,
   rw max_lt_iff at az,
   exact lt_irrefl _ (lt_of_lt_of_le az.2 (hy ⟨le_of_lt az.1, zy⟩))
 end
 
-end decidable_linear_order
+end linear_order
 
 section preorder
 variables [preorder α] [preorder β]
@@ -285,6 +278,14 @@ lemma bdd_above_of_bdd_above_of_monotone {f : α → β} (hf : monotone f) : bdd
 /--The image under a monotone function of a set which is bounded below is bounded below-/
 lemma bdd_below_of_bdd_below_of_monotone {f : α → β} (hf : monotone f) : bdd_below s → bdd_below (f '' s)
 | ⟨C, hC⟩ := ⟨f C, by rintro y ⟨x, x_bnd, rfl⟩; exact hf (hC x_bnd)⟩
+
+lemma bdd_below_iff_subset_Ici (s : set α) : bdd_below s ↔ ∃ a, s ⊆ Ici a := iff.rfl
+
+lemma bdd_above_iff_subset_Iic (s : set α) : bdd_above s ↔ ∃ a, s ⊆ Iic a := iff.rfl
+
+lemma bdd_below_bdd_above_iff_subset_Icc (s : set α) :
+  bdd_below s ∧ bdd_above s ↔ ∃ a b, s ⊆ Icc a b :=
+by simp [Ici_inter_Iic.symm, subset_inter_iff, bdd_below_iff_subset_Ici, bdd_above_iff_subset_Iic]
 
 end preorder
 

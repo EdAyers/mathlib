@@ -7,8 +7,7 @@ Type of bounded continuous functions taking values in a metric space, with
 the uniform distance.
  -/
 
-import analysis.normed_space.basic topology.metric_space.cau_seq_filter
-       topology.metric_space.lipschitz
+import analysis.normed_space.basic topology.metric_space.lipschitz
 
 noncomputable theory
 local attribute [instance] classical.decidable_inhabited classical.prop_decidable
@@ -27,13 +26,13 @@ lemma continuous_of_locally_uniform_limit_of_continuous [topological_space α] [
 continuous_iff'.2 $ λ x ε ε0, begin
   rcases L x with ⟨r, rx, hr⟩,
   rcases hr (ε/2/2) (half_pos $ half_pos ε0) with ⟨n, hn⟩,
-  rcases continuous_iff'.1 (C n) x (ε/2) (half_pos ε0) with ⟨s, sx, hs⟩,
-  refine ⟨_, (𝓝 x).inter_sets rx sx, _⟩,
-  rintro y ⟨yr, ys⟩,
+  filter_upwards [rx, continuous_iff'.1 (C n) x (ε/2) (half_pos ε0)],
+  simp only [mem_set_of_eq],
+  rintro y yr ys,
   calc dist (f y) (f x)
         ≤ dist (F n y) (F n x) + (dist (F n y) (f y) + dist (F n x) (f x)) : dist_triangle4_left _ _ _ _
     ... < ε/2 + (ε/2/2 + ε/2/2) :
-      add_lt_add_of_lt_of_le (hs _ ys) (add_le_add (hn _ yr) (hn _ (mem_of_nhds rx)))
+      add_lt_add_of_lt_of_le ys (add_le_add (hn _ yr) (hn _ (mem_of_nhds rx)))
     ... = ε : by rw [add_halves, add_halves]
 end
 
@@ -63,8 +62,7 @@ bounded_range_iff.2 f.2.2
 /-- If a function is continuous on a compact space, it is automatically bounded,
 and therefore gives rise to an element of the type of bounded continuous functions -/
 def mk_of_compact [compact_space α] (f : α → β) (hf : continuous f) : α →ᵇ β :=
-⟨f, hf, bounded_range_iff.1 $ by rw ← image_univ; exact
-  bounded_of_compact (compact_image compact_univ hf)⟩
+⟨f, hf, bounded_range_iff.1 $ bounded_of_compact $ compact_range hf⟩
 
 /-- If a function is bounded on a discrete space, it is automatically continuous,
 and therefore gives rise to an element of the type of bounded continuous functions -/
@@ -93,7 +91,7 @@ end
 
 /-- The pointwise distance is controlled by the distance between functions, by definition -/
 lemma dist_coe_le_dist (x : α) : dist (f x) (g x) ≤ dist f g :=
-le_cInf (ne_empty_iff_exists_mem.2 dist_set_exists) $ λb hb, hb.2 x
+le_cInf dist_set_exists $ λb hb, hb.2 x
 
 @[ext] lemma ext (H : ∀x, f x = g x) : f = g :=
 subtype.eq $ by ext; apply H
@@ -102,7 +100,7 @@ subtype.eq $ by ext; apply H
 useless afterwards as it will be superceded by the general result that the distance is nonnegative
 is metric spaces. -/
 private lemma dist_nonneg' : 0 ≤ dist f g :=
-le_cInf (ne_empty_iff_exists_mem.2 dist_set_exists) (λ C, and.left)
+le_cInf dist_set_exists (λ C, and.left)
 
 /-- The distance between two functions is controlled by the supremum of the pointwise distances -/
 lemma dist_le (C0 : (0 : ℝ) ≤ C) : dist f g ≤ C ↔ ∀x:α, dist (f x) (g x) ≤ C :=
@@ -122,6 +120,7 @@ instance : metric_space (α →ᵇ β) :=
     (dist_le (add_nonneg dist_nonneg' dist_nonneg')).2 $ λ x,
       le_trans (dist_triangle _ _ _) (add_le_add (dist_coe_le_dist _) (dist_coe_le_dist _)) }
 
+/-- Constant as a continuous bounded function. -/
 def const (b : β) : α →ᵇ β := ⟨λx, b, continuous_const, 0, by simp [le_refl]⟩
 
 /-- If the target space is inhabited, so is the space of bounded continuous functions -/
@@ -131,13 +130,12 @@ instance [inhabited β] : inhabited (α →ᵇ β) := ⟨const (default β)⟩
 theorem continuous_eval : continuous (λ p : (α →ᵇ β) × α, p.1 p.2) :=
 continuous_iff'.2 $ λ ⟨f, x⟩ ε ε0,
 /- use the continuity of `f` to find a neighborhood of `x` where it varies at most by ε/2 -/
-let ⟨s, sx, Hs⟩ := continuous_iff'.1 f.2.1 x (ε/2) (half_pos ε0) in
-/- s : set α, sx : s ∈ 𝓝 x, Hs : ∀ (b : α), b ∈ s → dist (f.val b) (f.val x) < ε / 2 -/
-⟨set.prod (ball f (ε/2)) s, prod_mem_nhds_sets (ball_mem_nhds _ (half_pos ε0)) sx,
+have Hs : _ := continuous_iff'.1 f.2.1 x (ε/2) (half_pos ε0),
+mem_sets_of_superset (prod_mem_nhds_sets (ball_mem_nhds _ (half_pos ε0)) Hs) $
 λ ⟨g, y⟩ ⟨hg, hy⟩, calc dist (g y) (f x)
       ≤ dist (g y) (f y) + dist (f y) (f x) : dist_triangle _ _ _
-  ... < ε/2 + ε/2 : add_lt_add (lt_of_le_of_lt (dist_coe_le_dist _) hg) (Hs _ hy)
-  ... = ε : add_halves _⟩
+  ... < ε/2 + ε/2 : add_lt_add (lt_of_le_of_lt (dist_coe_le_dist _) hg) hy
+  ... = ε : add_halves _
 
 /-- In particular, when `x` is fixed, `f → f x` is continuous -/
 theorem continuous_evalx {x : α} : continuous (λ f : α →ᵇ β, f x) :=
@@ -255,7 +253,7 @@ begin
   /- For all x, the set hU x is an open set containing x on which the elements of A
   fluctuate by at most ε₂.
   We extract finitely many of these sets that cover the whole space, by compactness -/
-  rcases compact_elim_finite_subcover_image compact_univ
+  rcases compact_univ.elim_finite_subcover_image
     (λx _, (hU x).2.1) (λx hx, mem_bUnion (mem_univ _) (hU x).1)
     with ⟨tα, _, ⟨_⟩, htα⟩,
   /- tα : set α, htα : univ ⊆ ⋃x ∈ tα, U x -/
@@ -272,8 +270,7 @@ begin
   rintro ⟨f, hf⟩ ⟨g, hg⟩ f_eq_g,
   /- If two functions have the same approximation, then they are within distance ε -/
   refine lt_of_le_of_lt ((dist_le $ le_of_lt ε₁0).2 (λ x, _)) εε₁,
-  have : ∃x', x' ∈ tα ∧ x ∈ U x' := mem_bUnion_iff.1 (htα (mem_univ x)),
-  rcases this with ⟨x', x'tα, hx'⟩,
+  obtain ⟨x', x'tα, hx'⟩ : ∃x' ∈ tα, x ∈ U x' := mem_bUnion_iff.1 (htα (mem_univ x)),
   refine calc dist (f x) (g x)
       ≤ dist (f x) (f x') + dist (g x) (g x') + dist (f x') (g x') : dist_triangle4_right _ _ _ _
   ... ≤ ε₂ + ε₂ + ε₁/2 : le_of_lt (add_lt_add (add_lt_add _ _) _)
@@ -304,7 +301,7 @@ begin
   have M : lipschitz_with 1 coe := lipschitz_with.subtype_coe s,
   let F : (α →ᵇ s) → α →ᵇ β := comp coe M,
   refine compact_of_is_closed_subset
-    (compact_image (_ : compact (F ⁻¹' A)) (continuous_comp M)) closed (λ f hf, _),
+    ((_ : compact (F ⁻¹' A)).image (continuous_comp M)) closed (λ f hf, _),
   { haveI : compact_space s := compact_iff_compact_space.1 hs,
     refine arzela_ascoli₁ _ (continuous_iff_is_closed.1 (continuous_comp M) _ closed)
       (λ x ε ε0, bex.imp_right (λ U U_nhds hU y z hy hz f hf, _) (H x ε ε0)),
@@ -328,13 +325,13 @@ theorem arzela_ascoli
 addition to being closed, still satisfies the properties of compact range and equicontinuity -/
 arzela_ascoli₂ s hs (closure A) is_closed_closure
   (λ f x hf, (mem_of_closed' (closed_of_compact _ hs)).2 $ λ ε ε0,
-    let ⟨g, gA, dist_fg⟩ := mem_closure_iff'.1 hf ε ε0 in
+    let ⟨g, gA, dist_fg⟩ := metric.mem_closure_iff.1 hf ε ε0 in
     ⟨g x, in_s g x gA, lt_of_le_of_lt (dist_coe_le_dist _) dist_fg⟩)
   (λ x ε ε0, show ∃ U ∈ 𝓝 x,
       ∀ y z ∈ U, ∀ (f : α →ᵇ β), f ∈ closure A → dist (f y) (f z) < ε,
     begin
       refine bex.imp_right (λ U U_set hU y z hy hz f hf, _) (H x (ε/2) (half_pos ε0)),
-      rcases mem_closure_iff'.1 hf (ε/2/2) (half_pos (half_pos ε0)) with ⟨g, gA, dist_fg⟩,
+      rcases metric.mem_closure_iff.1 hf (ε/2/2) (half_pos (half_pos ε0)) with ⟨g, gA, dist_fg⟩,
       replace dist_fg := λ x, lt_of_le_of_lt (dist_coe_le_dist x) dist_fg,
       calc dist (f y) (f z) ≤ dist (f y) (g y) + dist (f z) (g z) + dist (g y) (g z) : dist_triangle4_right _ _ _ _
           ... < ε/2/2 + ε/2/2 + ε/2 :

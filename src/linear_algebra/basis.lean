@@ -807,7 +807,7 @@ lemma constr_smul {ι R M M'} [comm_ring R]
   hv.constr (λb, a • f b) = a • hv.constr f :=
 constr_eq hv $ by simp [constr_basis hv] {contextual := tt}
 
-lemma constr_range [inhabited ι] (hv : is_basis R v) {f : ι  → M'} :
+lemma constr_range [nonempty ι] (hv : is_basis R v) {f : ι  → M'} :
   (hv.constr f).range = span R (range f) :=
 by rw [is_basis.constr, linear_map.range_comp, linear_map.range_comp, is_basis.repr_range,
     finsupp.lmap_domain_supported, ←set.image_univ, ←finsupp.span_eq_map_total, image_id]
@@ -858,7 +858,7 @@ begin
     simp [submodule.mem_span_singleton] }
 end
 
-lemma linear_equiv.is_basis (hs : is_basis R v)
+protected lemma linear_equiv.is_basis (hs : is_basis R v)
   (f : M ≃ₗ[R] M') : is_basis R (f ∘ v) :=
 begin
   split,
@@ -982,7 +982,7 @@ begin
   ext i,
   rw [unique.eq_default i, finsupp.zero_apply],
   by_contra hc,
-  have := smul_smul _ (l (default ι))⁻¹ (l (default ι)) (v (default ι)),
+  have := smul_smul (l (default ι))⁻¹ (l (default ι)) (v (default ι)),
   rw [finsupp.unique_single l, finsupp.total_single] at hl,
   rw [hl, inv_mul_cancel hc, smul_zero, one_smul] at this,
   exact h this.symm

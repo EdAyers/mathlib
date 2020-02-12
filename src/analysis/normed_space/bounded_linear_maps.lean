@@ -134,11 +134,11 @@ open asymptotics filter
 theorem is_O_id {f : E → F} (h : is_bounded_linear_map 𝕜 f) (l : filter E) :
   is_O f (λ x, x) l :=
 let ⟨M, hMp, hM⟩ := h.bound in
-⟨M, hMp, mem_sets_of_superset univ_mem_sets (λ x _, hM x)⟩
+⟨M, mem_sets_of_superset univ_mem_sets (λ x _, hM x)⟩
 
 theorem is_O_comp {E : Type*} {g : F → G} (hg : is_bounded_linear_map 𝕜 g)
   {f : E → F} (l : filter E) : is_O (λ x', g (f x')) f l :=
-((hg.is_O_id ⊤).comp _).mono (map_le_iff_le_comap.mp lattice.le_top)
+(hg.is_O_id ⊤).comp_tendsto lattice.le_top
 
 theorem is_O_sub {f : E → F} (h : is_bounded_linear_map 𝕜 f)
   (l : filter E) (x : E) : is_O (λ x', f (x' - x)) (λ x', x' - x) l :=
@@ -260,11 +260,23 @@ lemma is_bounded_bilinear_map_apply :
   smul_right := by simp,
   bound      := ⟨1, zero_lt_one, by simp [continuous_linear_map.le_op_norm]⟩ }
 
+/-- The function `continuous_linear_map.smul_right`, associating to a continuous linear map
+`f : E → 𝕜` and a scalar `c : F` the tensor product `f ⊗ c` as a continuous linear map from `E` to
+`F`, is a bounded bilinear map. -/
+lemma is_bounded_bilinear_map_smul_right :
+  is_bounded_bilinear_map 𝕜
+    (λp, (continuous_linear_map.smul_right : (E →L[𝕜] 𝕜) → F → (E →L[𝕜] F)) p.1 p.2) :=
+{ add_left   := λm₁ m₂ f, by { ext z, simp [add_smul] },
+  smul_left  := λc m f, by { ext z, simp [mul_smul] },
+  add_right  := λm f₁ f₂, by { ext z, simp [smul_add] },
+  smul_right := λc m f, by { ext z, simp [smul_smul, mul_comm] },
+  bound      := ⟨1, zero_lt_one, λm f, by simp⟩ }
+
 /-- Definition of the derivative of a bilinear map `f`, given at a point `p` by
 `q ↦ f(p.1, q.2) + f(q.1, p.2)` as in the standard formula for the derivative of a product.
 We define this function here a bounded linear map from `E × F` to `G`. The fact that this
 is indeed the derivative of `f` is proved in `is_bounded_bilinear_map.has_fderiv_at` in
-`deriv.lean`-/
+`fderiv.lean`-/
 
 def is_bounded_bilinear_map.linear_deriv (h : is_bounded_bilinear_map 𝕜 f) (p : E × F) :
   (E × F) →ₗ[𝕜] G :=
@@ -282,7 +294,7 @@ def is_bounded_bilinear_map.linear_deriv (h : is_bounded_bilinear_map 𝕜 f) (p
 /-- The derivative of a bounded bilinear map at a point `p : E × F`, as a continuous linear map
 from `E × F` to `G`. -/
 def is_bounded_bilinear_map.deriv (h : is_bounded_bilinear_map 𝕜 f) (p : E × F) : (E × F) →L[𝕜] G :=
-(h.linear_deriv p).with_bound $ begin
+(h.linear_deriv p).mk_continuous_of_exists_bound $ begin
   rcases h.bound with ⟨C, Cpos, hC⟩,
   refine ⟨C * ∥p.1∥ + C * ∥p.2∥, λq, _⟩,
   calc ∥f (p.1, q.2) + f (q.1, p.2)∥

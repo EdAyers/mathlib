@@ -299,15 +299,15 @@ equiv.symm_apply_apply (e.to_equiv)
 lemma map_one {α β} [monoid α] [monoid β] (h : α ≃* β) : h 1 = 1 :=
 by rw [←mul_one (h 1), ←h.apply_symm_apply 1, ←h.map_mul, one_mul]
 
-@[to_additive]
-lemma map_eq_one_iff {α β} [monoid α] [monoid β] (h : α ≃* β) (x : α) :
+@[simp, to_additive]
+lemma map_eq_one_iff {α β} [monoid α] [monoid β] (h : α ≃* β) {x : α} :
   h x = 1 ↔ x = 1 :=
 h.map_one ▸ h.to_equiv.apply_eq_iff_eq x 1
 
 @[to_additive]
-lemma map_ne_one_iff {α β} [monoid α] [monoid β] (h : α ≃* β) (x : α) :
+lemma map_ne_one_iff {α β} [monoid α] [monoid β] (h : α ≃* β) {x : α} :
   h x ≠ 1 ↔ x ≠ 1 :=
-⟨mt (h.map_eq_one_iff x).2, mt (h.map_eq_one_iff x).1⟩
+⟨mt h.map_eq_one_iff.2, mt h.map_eq_one_iff.1⟩
 
 /--
 Extract the forward direction of a multiplicative equivalence
@@ -389,6 +389,8 @@ by refine_struct
   inv := mul_equiv.symm };
 intros; ext; try { refl }; apply equiv.left_inv
 
+instance : inhabited (mul_aut α) := ⟨1⟩
+
 /-- Monoid hom from the group of multiplicative automorphisms to the group of permutations. -/
 def to_perm : mul_aut α →* equiv.perm α :=
 by refine_struct { to_fun := mul_equiv.to_equiv }; intros; refl
@@ -410,6 +412,8 @@ by refine_struct
   one := add_equiv.refl α,
   inv := add_equiv.symm };
 intros; ext; try { refl }; apply equiv.left_inv
+
+instance : inhabited (add_aut α) := ⟨1⟩
 
 /-- Monoid hom from the group of multiplicative automorphisms to the group of permutations. -/
 def to_perm : add_aut α →* equiv.perm α :=
@@ -490,16 +494,24 @@ section
 variables [semiring α] [semiring β] (f : α ≃+* β) (x y : α)
 
 /-- A ring isomorphism preserves multiplication. -/
-lemma map_mul : f (x * y) = f x * f y := f.map_mul' x y
+@[simp] lemma map_mul : f (x * y) = f x * f y := f.map_mul' x y
 
 /-- A ring isomorphism sends one to one. -/
-lemma map_one : f 1 = 1 := (f : α ≃* β).map_one
+@[simp] lemma map_one : f 1 = 1 := (f : α ≃* β).map_one
 
 /-- A ring isomorphism preserves addition. -/
-lemma map_add : f (x + y) = f x + f y := f.map_add' x y
+@[simp] lemma map_add : f (x + y) = f x + f y := f.map_add' x y
 
 /-- A ring isomorphism sends zero to zero. -/
-lemma map_zero : f 0 = 0 := (f : α ≃+ β).map_zero
+@[simp] lemma map_zero : f 0 = 0 := (f : α ≃+ β).map_zero
+
+variable {x}
+
+@[simp] lemma map_eq_one_iff : f x = 1 ↔ x = 1 := (f : α ≃* β).map_eq_one_iff
+@[simp] lemma map_eq_zero_iff : f x = 0 ↔ x = 0 := (f : α ≃+ β).map_eq_zero_iff
+
+lemma map_ne_one_iff : f x ≠ 1 ↔ x ≠ 1 := (f : α ≃* β).map_ne_one_iff
+lemma map_ne_zero_iff : f x ≠ 0 ↔ x ≠ 0 := (f : α ≃+ β).map_ne_zero_iff
 
 end
 
@@ -507,11 +519,11 @@ section
 
 variables [ring α] [ring β] (f : α ≃+* β) (x y : α)
 
-lemma map_neg : f (-x) = -f x := (f : α ≃+ β).map_neg x
+@[simp] lemma map_neg : f (-x) = -f x := (f : α ≃+ β).map_neg x
 
-lemma map_sub : f (x - y) = f x - f y := (f : α ≃+ β).map_sub x y
+@[simp] lemma map_sub : f (x - y) = f x - f y := (f : α ≃+ β).map_sub x y
 
-lemma map_neg_one : f (-1) = -1 := f.map_one ▸ f.map_neg 1
+@[simp] lemma map_neg_one : f (-1) = -1 := f.map_one ▸ f.map_neg 1
 
 end
 
@@ -617,6 +629,8 @@ by refine_struct
   one := ring_equiv.refl R,
   inv := ring_equiv.symm };
 intros; ext; try { refl }; apply equiv.left_inv
+
+instance : inhabited (ring_aut R) := ⟨1⟩
 
 /-- Monoid homomorphism from ring automorphisms to additive automorphisms. -/
 def to_add_aut : ring_aut R →* add_aut R :=
