@@ -308,9 +308,9 @@ instance atomic.grothendieck
    end
 , trans :=
 begin
-  rintros _ _ _ _ Ra,
-  refine ⟨_,_⟩,
-  sorry
+  rintros _ _ ⟨f,fS⟩ _ Ra,
+  rcases Ra f fS with ⟨g,h₁⟩,
+  refine ⟨_,h₁⟩
 end
 }
 
