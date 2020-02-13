@@ -1,9 +1,12 @@
 import .category order ..order.galois_connection ..order.complete_lattice ..data.set
 import category_theory.whiskering
 import category_theory.opposites
+import category_theory.limits.shapes.finite_limits
+import category_theory.limits.shapes.terminal
+import category_theory.epi_mono
 
-namespace category_theory
 universes u v w
+namespace category_theory
 variables {C : Type u}
 
 def slice (C : Type u) [category.{v} C] (X : C) := Σ Y, Y ⟶ X
@@ -325,9 +328,19 @@ instance atomic.grothendieck
 
 /- Sheaves on a site.
 I have to define presheaves again because mathlib only has them wrt topologies.
+Instead of sending it to `Set` I am sending it to `Type u`.
+I'm not even sure how one would define the category `Set`.
  -/
 
-def presheaf (C : Type u) [𝒞 : category.{v} C] := (opposite C) ⥤ Type
+def presheaf (C : Type u) [𝒞 : category.{v} C] := (opposite C) ⥤ Type u
+section subobject_classifier
+open category_theory.limits
+
+
+
+
+
+end subobject_classifier
 
 
 end category_theory

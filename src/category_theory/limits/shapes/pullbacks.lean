@@ -306,4 +306,21 @@ class has_pushouts :=
 
 attribute [instance] has_pullbacks.has_limits_of_shape has_pushouts.has_colimits_of_shape
 
+lemma pullback_hom_ext {X Y Z A : C} {f : X ⟶ Z} {g : Y ⟶ Z} [has_limit (cospan f g)]
+  (a b : A ⟶ pullback f g)
+  (h1 : a ≫ pullback.fst = b ≫ pullback.fst)
+  (h2 : a ≫ pullback.snd = b ≫ pullback.snd)
+    : a = b :=
+begin
+  apply limit.hom_ext,
+  intro j, cases j,
+  apply h1, apply h2,
+  have c, apply @pullback.condition _ _ _ _ _ f g _,
+  have xx : _ ≫ _ = limits.limit.π (cospan f g) one,
+    apply limits.limit.w (cospan f g) walking_cospan.hom.inl,
+  rw ← xx,
+  rw ← category.assoc,
+  rw h1, simp,
+end
+
 end category_theory.limits
