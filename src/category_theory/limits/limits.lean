@@ -481,6 +481,13 @@ def limit.hom_iso' (F : J ⥤ C) [has_limit F] (W : C) :
   ((W ⟶ limit F) : Type v) ≅ { p : Π j, W ⟶ F.obj j // ∀ {j j' : J} (f : j ⟶ j'), p j ≫ F.map f = p j' } :=
 (limit.is_limit F).hom_iso' W
 
+@[simp] lemma limit.lift_self_id (F : J ⥤ C) [has_limit F] : limit.lift F (limit.cone F) = 𝟙 (limit F) :=
+begin
+  symmetry,
+  refine is_limit.uniq' _ _ _ _,
+  intro j, simp, rw [id_comp _ (limit.π F j)]
+end
+
 lemma limit.lift_extend {F : J ⥤ C} [has_limit F] (c : cone F) {X : C} (f : X ⟶ c.X) :
   limit.lift F (c.extend f) = f ≫ limit.lift F c :=
 by obviously

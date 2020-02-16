@@ -339,6 +339,20 @@ is_equivalence.mk (equivalence_inverse F)
     (λ Y, F.fun_obj_preimage_iso Y)
     (by obviously))
 
+lemma whisker_left_equiv (E : C ⥤ C) [is_equivalence E] : is_equivalence ((whiskering_left C C D).obj E) :=
+begin
+  refine ⟨_,_,_,_⟩,
+  refine ((whiskering_left C C D).obj E.inv),
+  simp,
+  refine of_components _ _,
+    intros, simp,
+      apply iso.symm,
+      apply inv_fun_id_assoc (functor.as_equivalence E),
+    intros, simp, ext, simp,   rw functor.inv_fun_id,
+  -- [todo] the idea is that once you have this you can get flippable pullbacks.
+  sorry
+end
+
 end equivalence
 
 end category_theory

@@ -6,7 +6,7 @@ import category_theory.limits.shapes.terminal
 import category_theory.limits.shapes.pullbacks
 import category_theory.epi_mono
 import category_theory.category.Cat
-
+import category_theory.yoneda
 universes u v w
 
 namespace category_theory
@@ -17,7 +17,8 @@ structure sub (C : Type u) [𝒞 : category.{v} C] (X : C) :=
 (f : A ⟶ X)
 (hf : @mono C 𝒞 _ _ f)
 
-instance asdf.sub_is_cat {C : Type u} [𝒞 : category.{v} C] {X : C} : category (@sub C 𝒞 X) :=
+/-- sub is a cateogry. -/
+instance sub.is_cat {C : Type u} [𝒞 : category.{v} C] {X : C} : category (@sub C 𝒞 X) :=
 {  hom := λ A B, {h : A.A ⟶ B.A // h ≫ B.f = A.f}
 ,  id  := λ A, ⟨𝟙 A.A, by simp⟩
 , comp :=
@@ -33,13 +34,10 @@ instance asdf.sub_is_cat {C : Type u} [𝒞 : category.{v} C] {X : C} : category
 @[simp] lemma sub_id2 {C : Type u} [𝒞 : category.{v} C] {X : C} {A : sub C X}: ↑(𝟙 A) = 𝟙 A.A := by refl
 @[simp] lemma sub_comp {C : Type u} [𝒞 : category.{v} C] {X : C} {A B D : sub C X} {f : A ⟶ B} {g : B ⟶ D}: subtype.val (f ≫ g) = f.val ≫ g.val := by refl
 
-
 open category_theory.limits
-#check sub
-#check asdf.sub_is_cat
-#check has_pullbacks
 open opposite
 
+/-- Pullback of a monic is monic. -/
 lemma pullback_mono {C : Type u} [𝒞 : category.{v} C] [@has_pullbacks C 𝒞]
   {X Y Z : C} {f : X ⟶ Z} {g : Y ⟶ Z} (hm : @mono _ 𝒞 _ _ f) : @mono C 𝒞 (pullback f g) _ (pullback.snd) :=
 begin
@@ -52,41 +50,37 @@ begin
   show a ≫ pullback.snd = b ≫ pullback.snd, assumption,
 end
 
-def SUB {C : Type u} [𝒞 : category.{v} C] [@has_pullbacks C 𝒞]: functor Cᵒᵖ Cat :=
-{ obj := λ (X : Cᵒᵖ), bundled.mk (@sub C 𝒞 (unop X)) (begin apply asdf.sub_is_cat end)
-, map := begin
-intros X Y f,
+/-- Each Y ⟶ X induces a functor between the subobject categories by taking a pullback. -/
+def SUB_map {C : Type u} [𝒞 : category.{v} C] [@has_pullbacks C 𝒞] {X Y : C} (YX : Y ⟶ X) : (sub C X) ⥤ (sub C Y) :=
+begin
 refine functor.mk
-  (λ A : sub _ _, sub.mk (pullback A.f f.unop) (pullback.snd)(pullback_mono A.hf))
+  (λ A : sub _ _, sub.mk (pullback A.f YX) (pullback.snd)(pullback_mono A.hf))
   (λ A B g, subtype.mk (pullback.lift (pullback.fst ≫ g) pullback.snd _) _) _ _,
-  -- sorry,
-  -- refine ⟨,pullback_mono ha⟩,
+show (pullback.fst ≫ g.val) ≫ B.f = pullback.snd ≫ YX,
   cases g, simp, rw g_property, rw pullback.condition,
-simp, refl,
-rintros ⟨A,a,ha⟩,
-apply subtype.ext.2, rw sub_id, apply pullback_hom_ext,  simp, refl,
-simp,  refl, simp, intros, apply subtype.ext.2, simp,
--- I AM STUCK HERE!
+show pullback.lift (pullback.fst ≫ g.val) pullback.snd _ ≫ pullback.snd = pullback.snd,
+  cases g, simp,
+rintro ⟨A,AX,mAX⟩, apply subtype.ext.2,
+show pullback.lift (pullback.fst ≫ 𝟙 A) pullback.snd _ = 𝟙 (pullback AX YX),
+  simp,
+rintro I J K ij jk, apply subtype.ext.2,
+show pullback.lift (pullback.fst ≫ ↑(ij ≫ jk)) pullback.snd _ = pullback.lift (pullback.fst ≫ ↑ij) pullback.snd _ ≫ pullback.lift (pullback.fst ≫ ↑jk) pullback.snd _,
+  -- [todo]
+  sorry
 end
+
+/-- sub is a functor -/
+def SUB (C : Type u) [𝒞 : category.{v} C] [@has_pullbacks C 𝒞]: functor Cᵒᵖ Cat :=
+{ obj := λ (X : Cᵒᵖ), bundled.mk (@sub C 𝒞 (unop X)) (begin apply sub.is_cat end)
+, map := λ X Y f, SUB_map f.unop,
 , map_id := _
 , map_comp := _
 }
 
-
-
-#check pullback
 class has_subobject_classifier (C : Type u) [𝒞 : category.{v} C] [@has_finite_limits C 𝒞] :=
 (Ω : C)
-(truth : (category_theory.limits.terminal C) ⟶ Ω)
-(truth_mono : @mono _ 𝒞 _ _ truth)
-(asdf
-  (X Y : C) (f : X ⟶ Y)
-  (fm : @mono _ 𝒞 _ _ f)
-  : ∃! (φ : Y ⟶ Ω), pullback φ truth ↔ X)
-
-
+(magic_equiv : SUB C ≅ yoneda Ω)
 
 open category_theory.limits
-
 
 end category_theory

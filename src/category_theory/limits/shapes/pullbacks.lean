@@ -73,6 +73,18 @@ lemma hom_id (X : walking_cospan.{v}) : hom.id X = 𝟙 X := rfl
 /-- The walking_cospan is the index diagram for a pullback. -/
 instance : small_category.{v} walking_cospan.{v} := sparse_category
 
+def flip_obj : walking_cospan → walking_cospan := λ X, walking_cospan.cases_on X right left one
+
+def flip :walking_cospan ⥤ walking_cospan := {
+  obj := flip_obj,
+  map := λ X Y f, @walking_cospan.hom.cases_on (λ A B g, (flip_obj A) ⟶ (flip_obj B)) X Y f inr inl (λ X, hom.id (flip_obj X))}
+
+
+open category_theory.functor
+@[simp] lemma flip_flip : flip ⋙ flip = functor.id walking_cospan := begin apply category_theory.functor.ext, tactic.rotate 1, intro X, cases X, refl, refl, refl, intros X Y f, cases f, refl, refl, cases X, refl, refl, refl end
+instance : is_equivalence flip := begin refine ⟨flip,_,_,_⟩, rw flip_flip, rw flip_flip, tidy end
+
+
 end walking_cospan
 
 namespace walking_span
@@ -192,6 +204,37 @@ begin
   erw [t.w inl, ← t.w inr], refl
 end
 
+def cospans_flip_iso : cospan f g ≅ cospan g f :=
+begin
+  functor.fun_obj_preimage_iso
+end
+
+def flip : (cospan f g).cones ⟶ (cospan g f).cones :=
+begin
+  refine ⟨λ V cW, ⟨λ wc, walking_cospan.cases_on wc (cW.app right) (cW.app left) (cW.app one),_⟩, _⟩,
+  intros wc1 wc2 f,
+  cases f,
+    apply cW.naturality inr,
+    apply cW.naturality inl,
+    cases wc1,
+      simp, apply category.id_comp,
+      simp, apply category.id_comp,
+      simp, apply category.id_comp,
+  intros V W f,
+    funext, cases x, ext, cases x, simp, simp, simp
+end
+
+
+-- {app :=begin intro W, intro cW, refine ⟨_,_⟩, apply walking_cospan.rec, apply cW.app walking_cospan.right, apply cW.app walking_cospan.left, apply cW.app (walking_cospan.one), obviously,     end }
+#check cones
+def flip_iso : (cospan f g).cones ≅ (cospan g f).cones :=
+begin
+  refine iso.mk flip flip _ _,
+
+
+end
+
+
 end pullback_cone
 
 abbreviation pushout_cocone (f : X ⟶ Y) (g : X ⟶ Z) := cocone (span f g)
@@ -306,6 +349,15 @@ class has_pushouts :=
 
 attribute [instance] has_pullbacks.has_limits_of_shape has_pushouts.has_colimits_of_shape
 
+@[simp] lemma pullback.lift_fst  {W X Y Z : C} {f : X ⟶ Z} {g : Y ⟶ Z} [has_limit (cospan f g)]
+  (h : W ⟶ X) (k : W ⟶ Y) (w : h ≫ f = k ≫ g) :
+  (pullback.lift h k w) ≫ pullback.fst = h :=
+  begin rw limit.lift_π, refl end
+@[simp] lemma pullback.lift_snd  {W X Y Z : C} {f : X ⟶ Z} {g : Y ⟶ Z} [has_limit (cospan f g)]
+  (h : W ⟶ X) (k : W ⟶ Y) (w : h ≫ f = k ≫ g) :
+  (pullback.lift h k w) ≫ pullback.snd = k :=
+  begin rw limit.lift_π, refl end
+
 lemma pullback_hom_ext {X Y Z A : C} {f : X ⟶ Z} {g : Y ⟶ Z} [has_limit (cospan f g)]
   (a b : A ⟶ pullback f g)
   (h1 : a ≫ pullback.fst = b ≫ pullback.fst)
@@ -321,6 +373,32 @@ begin
   rw ← xx,
   rw ← category.assoc,
   rw h1, simp,
+end
+
+@[simp] lemma pullback_lift_self_id {X Y Z : C} {f : X ⟶ Z} {g : Y ⟶ Z} [has_limit (cospan f g)]
+: @pullback.lift _ _ _ X Y Z f g _ pullback.fst pullback.snd pullback.condition = 𝟙 _ :=
+begin
+  rw ←  limit.lift_self_id (cospan f g),
+  dunfold pullback.lift limits.limit.cone pullback pullback_cone.mk pullback.fst pullback.snd limits.has_limit.cone limits.limit,
+  congr, apply cone.ext, refl,
+  simp, ext, cases x, refl, refl, apply limits.limit.w (cospan f g) walking_cospan.hom.inl,
+end
+
+lemma pullback.symm : {X Y Z : C} {f : X ⟶ Z} {g : Y ⟶ Z} [has_limit (cospan f g)] :
+
+
+/-- [todo] refactor so this uses unique_up_to_iso -/
+lemma pullback_comp_l {W X Y Z : C} {xz : X ⟶ Z} {yz : Y ⟶ Z} {wx : W ⟶ X} [@has_pullbacks C 𝒞]:
+pullback (wx ≫ xz) yz ≅ pullback wx (@pullback.fst _ _ _ _ _ xz yz _) :=
+begin
+  apply iso.mk _ _ _ _ ,
+  refine pullback.lift pullback.fst (pullback.lift (pullback.fst ≫ wx) pullback.snd _) _,
+    simp, rw pullback.condition, simp,
+  refine pullback.lift pullback.fst (pullback.snd ≫ pullback.snd) _,
+  rw ← category.assoc, rw pullback.condition,  simp, rw pullback.condition,
+  simp,
+  apply pullback_hom_ext, simp, simp, dunfold pullback_cone.mk, simp,
+  apply pullback_hom_ext, simp, simp, apply pullback_hom_ext, simp, dunfold pullback_cone.mk, simp, apply pullback.condition, simp,
 end
 
 end category_theory.limits

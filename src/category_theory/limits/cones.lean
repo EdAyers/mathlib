@@ -95,6 +95,12 @@ structure cone (F : J ⥤ C) :=
   c.π.app j ≫ F.map f = c.π.app j' :=
 by convert ←(c.π.naturality f).symm; apply id_comp
 
+lemma cone.ext {F : J ⥤ C} : Π (c₁ c₂: cone F), (c₁.X = c₂.X) → (c₁.π == c₂.π) → c₁ = c₂ :=
+begin
+  rintros ⟨X₁,π₁⟩ ⟨X₂,π₂⟩ h₁ h₂,
+  cases h₁, cases h₂, refl,
+end
+
 /--
 A `c : cocone F` is
 * an object `c.X` and
